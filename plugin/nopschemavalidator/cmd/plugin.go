@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
-	"onix/shared/log"
-	"onix/shared/plugin/definition"
+	"net/url"
+
+	"github.com/ashishGuliya/onix/pkg/log"
+	"github.com/ashishGuliya/onix/pkg/plugin/definition"
 )
 
 type provider struct{}
@@ -15,7 +17,7 @@ func (vp provider) New(ctx context.Context, config map[string]string) (definitio
 type defaultValidator struct {
 }
 
-func (v *defaultValidator) Validate(ctx context.Context, b []byte) error {
+func (v *defaultValidator) Validate(ctx context.Context, url *url.URL, b []byte) error {
 	log.Debugf(ctx, "NOP Schema Validator called, Skipping schema validation.")
 	return nil
 }

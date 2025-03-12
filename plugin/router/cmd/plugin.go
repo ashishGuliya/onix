@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"onix/plugin/router"
-	"onix/shared/plugin/definition"
 	"os"
 
+	"github.com/ashishGuliya/onix/plugin/router"
+
+	"github.com/ashishGuliya/onix/pkg/plugin/definition"
 	"gopkg.in/yaml.v2"
 )
 

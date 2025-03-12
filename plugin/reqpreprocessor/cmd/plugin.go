@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"onix/plugin/reqpreprocessor"
+	"github.com/ashishGuliya/onix/plugin/reqpreprocessor"
 )
 
 // provider implements the PublisherProvider interface.

@@ -8,12 +8,9 @@ import (
 	"io"
 	"net/http"
 
-	"onix/shared/log"
-
+	"github.com/ashishGuliya/onix/pkg/log"
 	"github.com/google/uuid"
 )
-
-
 
 // updateFieldsMiddleware updates fields based on relative paths in the config.
 func New() func(http.Handler) http.Handler {

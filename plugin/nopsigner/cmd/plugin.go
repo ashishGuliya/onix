@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
-	"onix/shared/log"
-	"onix/shared/plugin/definition"
+
+	"github.com/ashishGuliya/onix/pkg/log"
+	"github.com/ashishGuliya/onix/pkg/plugin/definition"
 )
 
 type provider struct{}

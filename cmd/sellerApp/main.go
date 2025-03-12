@@ -1,28 +1,21 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"log"
 	"net/http"
-	"os"
-
-	"github.com/ashishGuliya/onix/shared/model"
-	"github.com/ashishGuliya/onix/shared/protocol"
-
-	"gopkg.in/yaml.v2"
 )
 
-var products []protocol.Provider
+// var products []protocol.Provider
 
 func loadProducts(filename string) {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		log.Fatalf("Failed to read YAML file: %v", err)
-	}
-	if err := yaml.Unmarshal(data, &products); err != nil {
-		log.Fatalf("Failed to parse YAML data: %v", err)
-	}
+	// data, err := os.ReadFile(filename)
+	// if err != nil {
+	// 	log.Fatalf("Failed to read YAML file: %v", err)
+	// }
+	// if err := yaml.Unmarshal(data, &products); err != nil {
+	// 	log.Fatalf("Failed to parse YAML data: %v", err)
+	// }
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
@@ -31,14 +24,14 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req model.BPPSearchRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Bad request", http.StatusBadRequest)
-		return
-	}
+	// var req model.BPPSearchRequest
+	// if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	// 	http.Error(w, "Bad request", http.StatusBadRequest)
+	// 	return
+	// }
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(model.BPPSearchResponse{Products: products})
+	// w.Header().Set("Content-Type", "application/json")
+	// json.NewEncoder(w).Encode(model.BPPSearchResponse{Products: products})
 }
 
 var dataPath string

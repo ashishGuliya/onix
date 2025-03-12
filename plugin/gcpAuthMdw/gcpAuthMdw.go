@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"onix/shared/log"
+
+	"github.com/ashishGuliya/onix/pkg/log"
 
 	credentials "cloud.google.com/go/iam/credentials/apiv1"
 	"cloud.google.com/go/iam/credentials/apiv1/credentialspb"
@@ -28,7 +29,7 @@ func New(ctx context.Context, cfg map[string]string) func(http.Handler) http.Han
 				Audience:     audience,
 				IncludeEmail: true,
 			})
-		
+
 			if err != nil {
 				log.Errorf(r.Context(), err, "Failed to generate identity token")
 				http.Error(w, "Failed to generate identity token", http.StatusInternalServerError)

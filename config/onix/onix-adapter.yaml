@@ -12,16 +12,15 @@ http:
     read: 30
     write: 30
     idle: 30
-plugin:
+pluginManager:
   root: /app/plugins
   remoteRoot: /mnt/gcs/plugins/plugins_bundle.zip
-module:
-  modules:
-    - name: reciever
-      type: transaction
-      path: /reciever
-      targetType: msgQ
-      plugin:
+modules:
+  - name: bapTxnReciever
+    path: /bap/reciever
+    handler:
+      type: std
+      plugins:
         schemaValidator:
           id: nopschemavalidator
         signValidator:
@@ -34,30 +33,78 @@ module:
         router:
           id: router
           config:
-            routingConfigPath: /mnt/gcs/configs/bapRecieverRouting-config.yaml
-        preProcessors:
-          - id: reqpreprocessor
-        steps:
+            routingConfigPath: /mnt/gcs/configs/bapTxnReciever-routing.yaml
       steps:
-      - addRoute
-        signValidate
-        -addRout
-        customValidate
-    - name: transactionCaller
-      path: /caller
-      targetType: "http"
-      plugin:
+        - validateSign
+        - addRoute
+        - validateSchema
+  - name: bapTxnCaller
+    path: /bap/caller
+    handler:
+      type: std
+      plugins:
+        schemaValidator:
+          id: nopschemavalidator
         signer:
           id: nopsigner
+        publisher:
+          id: publisher
+          config:
+            project: ondc-seller-dev
+            topic: bapNetworkReciever
         router:
           id: router
           config:
-            routingConfigPath: /mnt/gcs/configs/bapCallerRouting-config.yaml
-        preProcessors:
+            routingConfigPath: /mnt/gcs/configs/bapTxnCaller-routing.yaml
+        middleware:
           - id: reqpreprocessor
-        # postProcessors:
-        #   - id: gcpAuthMdw
-        #     config:
-        #       audience: https://bpp-adapter-903496459467.asia-southeast1.run.app
-        #       serviceAccount: 903496459467-compute@developer.gserviceaccount.com
-
+      steps:
+        - validateSchema
+        - addRoute
+        - sign
+  - name: bppTxnReciever
+    path: /bpp/reciever
+    handler:
+      type: std
+      plugins:
+        schemaValidator:
+          id: nopschemavalidator
+        signValidator:
+          id: nopsignvalidator
+        publisher:
+          id: publisher
+          config:
+            project: ondc-seller-dev
+            topic: bapNetworkReciever
+        router:
+          id: router
+          config:
+            routingConfigPath: /mnt/gcs/configs/bppTxnReciever-routing.yaml
+      steps:
+        - validateSign
+        - addRoute
+        - validateSchema
+  - name: bppTxnCaller
+    path: /bpp/caller
+    handler:
+      type: std
+      plugins:
+        schemaValidator:
+          id: nopschemavalidator
+        signer:
+          id: nopsigner
+        publisher:
+          id: publisher
+          config:
+            project: ondc-seller-dev
+            topic: bapNetworkReciever
+        router:
+          id: router
+          config:
+            routingConfigPath: /mnt/gcs/configs/bppTxnCaller-routing.yaml
+        middleware:
+          - id: reqpreprocessor
+      steps:
+        - validateSchema
+        - addRoute
+        - sign

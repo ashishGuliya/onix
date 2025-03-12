@@ -1,4 +1,4 @@
-package processor
+package handler
 
 import (
 	"bytes"
@@ -9,14 +9,13 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/ashishGuliya/onix/internal/module/config"
 	"github.com/ashishGuliya/onix/pkg/log"
 	"github.com/ashishGuliya/onix/pkg/plugin"
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
 )
 
-// processor orchestrates the execution of defined processing steps.
-type processor struct {
+// stdHandler orchestrates the execution of defined processing steps.
+type stdHandler struct {
 	signer          definition.Signer
 	steps           []definition.Step
 	signValidator   definition.SignValidator
@@ -25,9 +24,9 @@ type processor struct {
 	publisher       definition.Publisher
 }
 
-// NewProcessor initializes a new processor with plugins and steps.
-func NewProcessor(ctx context.Context, mgr *plugin.Manager, cfg *config.ModuleCfg) (*processor, error) {
-	p := &processor{
+// NewStdHandler initializes a new processor with plugins and steps.
+func NewStdHandler(ctx context.Context, mgr *plugin.Manager, cfg *Config) (http.Handler, error) {
+	p := &stdHandler{
 		steps: []definition.Step{},
 	}
 
@@ -45,7 +44,7 @@ func NewProcessor(ctx context.Context, mgr *plugin.Manager, cfg *config.ModuleCf
 }
 
 // Process executes defined processing steps on an incoming request.
-func (p *processor) Process(w http.ResponseWriter, r *http.Request) {
+func (p *stdHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Efficiently read the request body into a buffer
 	var bodyBuffer bytes.Buffer
 	if _, err := io.Copy(&bodyBuffer, r.Body); err != nil {
@@ -78,10 +77,10 @@ func (p *processor) Process(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Handle routing based on the defined route type
-	route(ctx, r, w, p)
+	route(ctx, r, w, p.publisher)
 }
 
-func route(ctx *definition.StepContext, r *http.Request, w http.ResponseWriter, p *processor, pb *definition.Publisher) {
+func route(ctx *definition.StepContext, r *http.Request, w http.ResponseWriter, pb definition.Publisher) {
 	switch ctx.Route.Type {
 	case "url":
 		log.Infof(ctx.Context, "Forwarding request to URL: %s", ctx.Route.URL)
@@ -121,7 +120,7 @@ func proxy(r *http.Request, w http.ResponseWriter, target *url.URL) {
 }
 
 // initPlugins initializes required plugins for the processor.
-func (p *processor) initPlugins(ctx context.Context, mgr *plugin.Manager, cfg *config.PluginCfg) error {
+func (p *stdHandler) initPlugins(ctx context.Context, mgr *plugin.Manager, cfg *pluginCfg) error {
 	var err error
 
 	if cfg.SignValidator != nil {
@@ -158,7 +157,7 @@ func (p *processor) initPlugins(ctx context.Context, mgr *plugin.Manager, cfg *c
 }
 
 // initSteps initializes and validates processing steps for the processor.
-func (p *processor) initSteps(ctx context.Context, mgr *plugin.Manager, cfg *config.ModuleCfg) error {
+func (p *stdHandler) initSteps(ctx context.Context, mgr *plugin.Manager, cfg *Config) error {
 	steps := make(map[string]definition.Step)
 
 	// Validate plugin dependencies before proceeding
@@ -178,16 +177,16 @@ func (p *processor) initSteps(ctx context.Context, mgr *plugin.Manager, cfg *con
 	// Register processing steps
 	for _, step := range cfg.Steps {
 		switch step {
-		case "Sign":
+		case "sign":
 			p.steps = append(p.steps, &signStep{signer: p.signer})
-		case "ValidateSign":
+		case "validateSign":
 			p.steps = append(p.steps, &validateSignStep{validator: p.signValidator})
-		case "ValidateSchema":
+		case "validateSchema":
 			p.steps = append(p.steps, &validateSchemaStep{validator: p.schemaValidator})
-		case "Broadcast":
+		case "broadcast":
 			p.steps = append(p.steps, &broadcastStep{})
-		case "GetRoute":
-			p.steps = append(p.steps, &getRouteStep{router: p.router})
+		case "addRoute":
+			p.steps = append(p.steps, &addRouteStep{router: p.router})
 		default:
 			if customStep, exists := steps[step]; exists {
 				p.steps = append(p.steps, customStep)
@@ -202,7 +201,7 @@ func (p *processor) initSteps(ctx context.Context, mgr *plugin.Manager, cfg *con
 }
 
 // validateStepDependencies ensures required plugins are loaded for configured steps.
-func validateStepDependencies(cfg *config.ModuleCfg, p *processor) error {
+func validateStepDependencies(cfg *Config, p *stdHandler) error {
 	if contains(cfg.Steps, "Sign") && p.signer == nil {
 		return fmt.Errorf("invalid config: Signer plugin not configured")
 	}

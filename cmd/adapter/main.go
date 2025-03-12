@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ashishGuliya/onix/core/module"
 	"github.com/ashishGuliya/onix/pkg/log"
-	"github.com/ashishGuliya/onix/pkg/module"
 	"github.com/ashishGuliya/onix/pkg/plugin"
 
 	"gopkg.in/yaml.v2"
@@ -20,11 +20,11 @@ import (
 
 // config struct holds all configurations.
 type config struct {
-	AppName string                `yaml:"appName"`
-	Log     log.Config            `yaml:"log"`
-	Plugin  *plugin.ManagerConfig `yaml:"plugin"`
-	Module  *module.Config        `yaml:"module"`
-	HTTP    httpConfig            `yaml:"http"` // Nest http config
+	AppName       string                `yaml:"appName"`
+	Log           log.Config            `yaml:"log"`
+	PluginManager *plugin.ManagerConfig `yaml:"pluginManager"`
+	Modules        []module.Config       `yaml:"modules"`
+	HTTP          httpConfig            `yaml:"http"` // Nest http config
 }
 
 type httpConfig struct {
@@ -92,7 +92,7 @@ func validateConfig(cfg *config) error {
 // newServer creates and initializes the HTTP server.
 func newServer(ctx context.Context, mgr *plugin.Manager, cfg *config) (http.Handler, error) {
 	mux := http.NewServeMux()
-	err := module.Register(ctx, cfg.Module, mux, mgr)
+	err := module.Register(ctx, cfg.Modules, mux, mgr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to register modules: %w", err)
 	}
@@ -112,7 +112,7 @@ func run(ctx context.Context, configPath string) error {
 
 	// Initialize plugin manager.
 	log.Infof(ctx, "Initializing plugin manager")
-	mgr, closer, err := plugin.NewManager(ctx, cfg.Plugin)
+	mgr, closer, err := plugin.NewManager(ctx, cfg.PluginManager)
 	if err != nil {
 		return fmt.Errorf("failed to create plugin manager: %w", err)
 	}

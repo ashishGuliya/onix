@@ -1,19 +1,13 @@
 package main
 
 import (
-	"bytes"
-	"context"
 	"encoding/json"
 	"flag"
-	"io"
 	"log"
 	"net/http"
 	"os"
 	"sync"
 
-	"github.com/ashishGuliya/onix/shared/model"
-
-	"google.golang.org/api/idtoken"
 	"gopkg.in/yaml.v2"
 )
 
@@ -60,28 +54,28 @@ func webhookHandler(w http.ResponseWriter, r *http.Request) {
 
 // callBecknAPI calls a Beckn provider API
 func CallBecknAPI(query string) {
-	request := &model.SearchRequest{
-		Criteria: model.SearchCriteria{
-			Domain: "local_retail",
-			Query:  query,
-		},
-	}
+	// request := &model.SearchRequest{
+	// 	Criteria: model.SearchCriteria{
+	// 		Domain: "local_retail",
+	// 		Query:  query,
+	// 	},
+	// }
 
-	body, _ := json.Marshal(request)
-	client, err := idtoken.NewClient(context.Background(), cfg.BapURL)
-	if err != nil {
-		log.Fatalf("idtoken.NewClient: %w", err)
-	}
-	resp, err := client.Post(cfg.BapURL, "application/json", bytes.NewBuffer(body))
-	if err != nil {
-		msgID = ""
-		log.Fatalf("Error calling Beckn API: %v", err)
-	}
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal("Error reading search response")
-	}
-	msgID = string(b)
+	// body, _ := json.Marshal(request)
+	// client, err := idtoken.NewClient(context.Background(), cfg.BapURL)
+	// if err != nil {
+	// 	log.Fatalf("idtoken.NewClient: %w", err)
+	// }
+	// resp, err := client.Post(cfg.BapURL, "application/json", bytes.NewBuffer(body))
+	// if err != nil {
+	// 	msgID = ""
+	// 	log.Fatalf("Error calling Beckn API: %v", err)
+	// }
+	// b, err := io.ReadAll(resp.Body)
+	// if err != nil {
+	// 	log.Fatal("Error reading search response")
+	// }
+	// msgID = string(b)
 }
 
 // uiHandler serves the UI page

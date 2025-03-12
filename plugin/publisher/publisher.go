@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"onix/shared/log"
 	"strings"
 
 	"cloud.google.com/go/pubsub"
+	"github.com/ashishGuliya/onix/pkg/log"
 	"google.golang.org/api/option"
 )
 
@@ -78,7 +78,7 @@ func New(ctx context.Context, cfg *Config, opts ...option.ClientOption) (*Publis
 // Publisher Methods.
 
 // Publish sends a message to Google Cloud Pub/Sub.
-func (p *Publisher) Publish(ctx context.Context, msg []byte) error {
+func (p *Publisher) Publish(ctx context.Context, topic string, msg []byte) error {
 	pubsubMsg := &pubsub.Message{
 		Data: msg,
 	}

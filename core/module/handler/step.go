@@ -1,8 +1,9 @@
-package processor
+package handler
 
 import (
 	"fmt"
-	"onix/shared/plugin/definition"
+
+	"github.com/ashishGuliya/onix/pkg/plugin/definition"
 )
 
 // 🔹 Sign Step
@@ -49,11 +50,11 @@ func (s *validateSchemaStep) Run(ctx *definition.StepContext) error {
 }
 
 // 🔹 Get Route Step
-type getRouteStep struct {
+type addRouteStep struct {
 	router definition.Router
 }
 
-func (s *getRouteStep) Run(ctx *definition.StepContext) error {
+func (s *addRouteStep) Run(ctx *definition.StepContext) error {
 	route, err := s.router.Route(ctx, ctx.Request.URL, ctx.Body)
 	if err != nil {
 		return fmt.Errorf("failed to determine route: %w", err)

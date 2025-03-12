@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+
+	"github.com/ashishGuliya/onix/pkg/plugin/definition"
 )
 
 type Config struct {
@@ -25,7 +27,8 @@ type router struct {
 	cfg *Config
 }
 
-func (r *router) Target(ctx context.Context, rb []byte) (*route, error) {
+func (r *router) Route(ctx context.Context, url *url.URL, rb []byte) (*definition.Route, error) {
+
 	var data map[string]json.RawMessage
 	if err := json.Unmarshal(rb, &data); err != nil {
 		return nil, fmt.Errorf("invalid request body json")
@@ -46,10 +49,11 @@ func (r *router) Target(ctx context.Context, rb []byte) (*route, error) {
 	if !ok {
 		return nil, fmt.Errorf("invalid request.context.action json")
 	}
-
+	resp := &definition.Route{}
 	for _, route := range r.cfg.Routes {
 		if route.Action == rAction {
-			return url.Parse(route.Target)
+			resp.Type = route.Type
+			url.Parse(route.Target)
 		}
 	}
 	return nil, fmt.Errorf("unsupported request.action: %v", rAction)
@@ -62,7 +66,7 @@ func valid(c *Config) error {
 	return nil
 }
 
-func New(ctx context.Context, url *url.URL, c *Config) (*router, error) {
+func New(ctx context.Context, c *Config) (*router, error) {
 	if err := valid(c); err != nil {
 		return nil, fmt.Errorf("invalid config: %v", err)
 	}
