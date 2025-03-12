@@ -1,0 +1,1261 @@
+[
+    {
+        "context": {
+            "action": "on_search",
+            "bap_id": "",
+            "bap_uri": "https://nsr-903496459467.us-central1.run.app",
+            "bpp_id": "bpp1",
+            "bpp_uri": "https://bppnr-903496459467.us-central1.run.app",
+            "city": "BLR",
+            "core_version": "0.9.2",
+            "country": "IND",
+            "domain": "local_retail",
+            "message_id": "100cac8b-ed4f-4489-b6ad-94501eaf7760",
+            "timestamp": "2025-03-02T21:36:30.628840852Z",
+            "transaction_id": "714da354-267d-4b48-86d4-1b22ab1c1016"
+        },
+        "message": {
+            "Catalog": {
+                "bpp/descriptor": {
+                    "additional_desc": {},
+                    "name": "bpp1"
+                },
+                "bpp/fulfillments": [
+                    {
+                        "agent": {},
+                        "contact": {
+                            "email": "",
+                            "jcard": {
+                                "card_type": "",
+                                "properties": null
+                            },
+                            "phone": ""
+                        },
+                        "customer": {},
+                        "id": "",
+                        "path": "",
+                        "rateable": false,
+                        "rating": 0,
+                        "state": {
+                            "descriptor": {
+                                "additional_desc": {}
+                            },
+                            "updated_at": "",
+                            "updated_by": ""
+                        },
+                        "stops": null,
+                        "tags": null,
+                        "tracking": false,
+                        "type": "home-delivery",
+                        "vehicle": {}
+                    }
+                ],
+                "bpp/providers": [
+                    {
+                        "categories": [
+                            {
+                                "descriptor": {
+                                    "additional_desc": {},
+                                    "name": "Fresh Fruits"
+                                },
+                                "id": "fresh_fruits",
+                                "parent_category_id": "",
+                                "tags": null,
+                                "time": {
+                                    "days": "",
+                                    "duration": "",
+                                    "label": "",
+                                    "range": {
+                                        "end": "",
+                                        "start": ""
+                                    },
+                                    "schedule": {},
+                                    "timestamp": ""
+                                },
+                                "ttl": ""
+                            },
+                            {
+                                "descriptor": {
+                                    "additional_desc": {},
+                                    "name": "Beverages"
+                                },
+                                "id": "beverages",
+                                "parent_category_id": "",
+                                "tags": null,
+                                "time": {
+                                    "days": "",
+                                    "duration": "",
+                                    "label": "",
+                                    "range": {
+                                        "end": "",
+                                        "start": ""
+                                    },
+                                    "schedule": {},
+                                    "timestamp": ""
+                                },
+                                "ttl": ""
+                            }
+                        ],
+                        "category_id": "",
+                        "descriptor": {
+                            "additional_desc": {},
+                            "name": "Pooja Stores"
+                        },
+                        "exp": "",
+                        "fulfillments": null,
+                        "id": "pooja-stores",
+                        "items": [
+                            {
+                                "add_ons": null,
+                                "cancellation_terms": null,
+                                "category_ids": null,
+                                "creator": {
+                                    "address": "",
+                                    "city": {
+                                        "code": "",
+                                        "name": ""
+                                    },
+                                    "contact": {
+                                        "email": "",
+                                        "jcard": {
+                                            "card_type": "",
+                                            "properties": null
+                                        },
+                                        "phone": ""
+                                    },
+                                    "descriptor": {
+                                        "additional_desc": {}
+                                    },
+                                    "state": {
+                                        "code": "",
+                                        "name": ""
+                                    }
+                                },
+                                "descriptor": {
+                                    "additional_desc": {},
+                                    "images": [
+                                        {
+                                            "url": "https://mock_bpp.com/images/item_2.jpg"
+                                        }
+                                    ],
+                                    "name": "Green Apples Organic"
+                                },
+                                "fulfillment_ids": null,
+                                "id": "item_2",
+                                "location_ids": null,
+                                "matched": true,
+                                "parent_item_id": "",
+                                "parent_item_quantity": {
+                                    "allocated": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "available": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "maximum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "minimum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "selected": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "unitized": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    }
+                                },
+                                "payment_ids": null,
+                                "price": {
+                                    "computed_value": "",
+                                    "currency": "INR",
+                                    "estimated_value": "",
+                                    "listed_value": "",
+                                    "maximum_value": "",
+                                    "minimum_value": "",
+                                    "offered_value": "",
+                                    "value": "170"
+                                },
+                                "quantity": {
+                                    "allocated": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "available": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "maximum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "minimum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "selected": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "unitized": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    }
+                                },
+                                "rateable": false,
+                                "rating": 0,
+                                "recommended": false,
+                                "refund_terms": null,
+                                "related": false,
+                                "replacement_terms": null,
+                                "return_terms": null,
+                                "tags": null,
+                                "time": {
+                                    "days": "",
+                                    "duration": "",
+                                    "label": "",
+                                    "range": {
+                                        "end": "",
+                                        "start": ""
+                                    },
+                                    "schedule": {},
+                                    "timestamp": ""
+                                },
+                                "ttl": "",
+                                "xinput": {
+                                    "form": {
+                                        "data": null,
+                                        "mime_type": "",
+                                        "submission_id": "",
+                                        "url": ""
+                                    },
+                                    "required": false
+                                }
+                            },
+                            {
+                                "add_ons": null,
+                                "cancellation_terms": null,
+                                "category_ids": null,
+                                "creator": {
+                                    "address": "",
+                                    "city": {
+                                        "code": "",
+                                        "name": ""
+                                    },
+                                    "contact": {
+                                        "email": "",
+                                        "jcard": {
+                                            "card_type": "",
+                                            "properties": null
+                                        },
+                                        "phone": ""
+                                    },
+                                    "descriptor": {
+                                        "additional_desc": {}
+                                    },
+                                    "state": {
+                                        "code": "",
+                                        "name": ""
+                                    }
+                                },
+                                "descriptor": {
+                                    "additional_desc": {},
+                                    "images": [
+                                        {
+                                            "url": "https://mock_bpp.com/images/item_1.jpg"
+                                        }
+                                    ],
+                                    "name": "Red Apples"
+                                },
+                                "fulfillment_ids": null,
+                                "id": "item_1",
+                                "location_ids": null,
+                                "matched": false,
+                                "parent_item_id": "",
+                                "parent_item_quantity": {
+                                    "allocated": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "available": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "maximum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "minimum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "selected": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "unitized": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    }
+                                },
+                                "payment_ids": null,
+                                "price": {
+                                    "computed_value": "",
+                                    "currency": "INR",
+                                    "estimated_value": "",
+                                    "listed_value": "",
+                                    "maximum_value": "",
+                                    "minimum_value": "",
+                                    "offered_value": "",
+                                    "value": "90"
+                                },
+                                "quantity": {
+                                    "allocated": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "available": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "maximum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "minimum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "selected": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "unitized": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    }
+                                },
+                                "rateable": false,
+                                "rating": 0,
+                                "recommended": false,
+                                "refund_terms": null,
+                                "related": true,
+                                "replacement_terms": null,
+                                "return_terms": null,
+                                "tags": null,
+                                "time": {
+                                    "days": "",
+                                    "duration": "",
+                                    "label": "",
+                                    "range": {
+                                        "end": "",
+                                        "start": ""
+                                    },
+                                    "schedule": {},
+                                    "timestamp": ""
+                                },
+                                "ttl": "",
+                                "xinput": {
+                                    "form": {
+                                        "data": null,
+                                        "mime_type": "",
+                                        "submission_id": "",
+                                        "url": ""
+                                    },
+                                    "required": false
+                                }
+                            },
+                            {
+                                "add_ons": null,
+                                "cancellation_terms": null,
+                                "category_ids": null,
+                                "creator": {
+                                    "address": "",
+                                    "city": {
+                                        "code": "",
+                                        "name": ""
+                                    },
+                                    "contact": {
+                                        "email": "",
+                                        "jcard": {
+                                            "card_type": "",
+                                            "properties": null
+                                        },
+                                        "phone": ""
+                                    },
+                                    "descriptor": {
+                                        "additional_desc": {}
+                                    },
+                                    "state": {
+                                        "code": "",
+                                        "name": ""
+                                    }
+                                },
+                                "descriptor": {
+                                    "additional_desc": {},
+                                    "images": [
+                                        {
+                                            "url": "https://mock_bpp.com/images/item_7.jpg"
+                                        }
+                                    ],
+                                    "name": "Green Apple Juice"
+                                },
+                                "fulfillment_ids": null,
+                                "id": "item_7",
+                                "location_ids": null,
+                                "matched": true,
+                                "parent_item_id": "",
+                                "parent_item_quantity": {
+                                    "allocated": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "available": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "maximum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "minimum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "selected": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "unitized": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    }
+                                },
+                                "payment_ids": null,
+                                "price": {
+                                    "computed_value": "",
+                                    "currency": "INR",
+                                    "estimated_value": "",
+                                    "listed_value": "",
+                                    "maximum_value": "",
+                                    "minimum_value": "",
+                                    "offered_value": "",
+                                    "value": "70"
+                                },
+                                "quantity": {
+                                    "allocated": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "available": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "maximum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "minimum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "selected": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "unitized": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    }
+                                },
+                                "rateable": false,
+                                "rating": 0,
+                                "recommended": false,
+                                "refund_terms": null,
+                                "related": false,
+                                "replacement_terms": null,
+                                "return_terms": null,
+                                "tags": null,
+                                "time": {
+                                    "days": "",
+                                    "duration": "",
+                                    "label": "",
+                                    "range": {
+                                        "end": "",
+                                        "start": ""
+                                    },
+                                    "schedule": {},
+                                    "timestamp": ""
+                                },
+                                "ttl": "",
+                                "xinput": {
+                                    "form": {
+                                        "data": null,
+                                        "mime_type": "",
+                                        "submission_id": "",
+                                        "url": ""
+                                    },
+                                    "required": false
+                                }
+                            }
+                        ],
+                        "locations": [
+                            {
+                                "3dspace": "",
+                                "address": "",
+                                "area_code": "",
+                                "circle": {
+                                    "gps": "",
+                                    "radius": ""
+                                },
+                                "city": {
+                                    "code": "",
+                                    "name": ""
+                                },
+                                "country": {
+                                    "code": "",
+                                    "name": ""
+                                },
+                                "descriptor": {
+                                    "additional_desc": {}
+                                },
+                                "district": "",
+                                "gps": "12.9349377,77.6055586",
+                                "id": "koramangala-4th-block-location",
+                                "map_url": "",
+                                "polygon": "",
+                                "rating": 0,
+                                "state": {
+                                    "code": "",
+                                    "name": ""
+                                }
+                            }
+                        ],
+                        "offers": null,
+                        "payments": null,
+                        "rateable": false,
+                        "rating": 0,
+                        "tags": null,
+                        "time": {
+                            "days": "",
+                            "duration": "",
+                            "label": "",
+                            "range": {
+                                "end": "",
+                                "start": ""
+                            },
+                            "schedule": {},
+                            "timestamp": ""
+                        },
+                        "ttl": 0
+                    },
+                    {
+                        "categories": [
+                            {
+                                "descriptor": {
+                                    "additional_desc": {},
+                                    "name": "Fresh food"
+                                },
+                                "id": "fresh-food",
+                                "parent_category_id": "",
+                                "tags": null,
+                                "time": {
+                                    "days": "",
+                                    "duration": "",
+                                    "label": "",
+                                    "range": {
+                                        "end": "",
+                                        "start": ""
+                                    },
+                                    "schedule": {},
+                                    "timestamp": ""
+                                },
+                                "ttl": ""
+                            }
+                        ],
+                        "category_id": "",
+                        "descriptor": {
+                            "additional_desc": {},
+                            "name": "Food Mall"
+                        },
+                        "exp": "",
+                        "fulfillments": null,
+                        "id": "food-mall",
+                        "items": [
+                            {
+                                "add_ons": null,
+                                "cancellation_terms": null,
+                                "category_ids": null,
+                                "creator": {
+                                    "address": "",
+                                    "city": {
+                                        "code": "",
+                                        "name": ""
+                                    },
+                                    "contact": {
+                                        "email": "",
+                                        "jcard": {
+                                            "card_type": "",
+                                            "properties": null
+                                        },
+                                        "phone": ""
+                                    },
+                                    "descriptor": {
+                                        "additional_desc": {}
+                                    },
+                                    "state": {
+                                        "code": "",
+                                        "name": ""
+                                    }
+                                },
+                                "descriptor": {
+                                    "additional_desc": {},
+                                    "images": [
+                                        {
+                                            "url": "https://mock_bpp.com/images/item_1_1.jpg"
+                                        }
+                                    ],
+                                    "name": "Green Apple Salad"
+                                },
+                                "fulfillment_ids": null,
+                                "id": "item_1_1",
+                                "location_ids": null,
+                                "matched": true,
+                                "parent_item_id": "",
+                                "parent_item_quantity": {
+                                    "allocated": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "available": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "maximum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "minimum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "selected": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "unitized": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    }
+                                },
+                                "payment_ids": null,
+                                "price": {
+                                    "computed_value": "",
+                                    "currency": "INR",
+                                    "estimated_value": "",
+                                    "listed_value": "",
+                                    "maximum_value": "",
+                                    "minimum_value": "",
+                                    "offered_value": "",
+                                    "value": "200"
+                                },
+                                "quantity": {
+                                    "allocated": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "available": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "maximum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "minimum": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "selected": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    },
+                                    "unitized": {
+                                        "count": 0,
+                                        "measure": {
+                                            "computed_value": "",
+                                            "estimated_value": "",
+                                            "range": {
+                                                "max": "",
+                                                "min": ""
+                                            },
+                                            "type": "",
+                                            "unit": "",
+                                            "value": ""
+                                        }
+                                    }
+                                },
+                                "rateable": false,
+                                "rating": 0,
+                                "recommended": false,
+                                "refund_terms": null,
+                                "related": false,
+                                "replacement_terms": null,
+                                "return_terms": null,
+                                "tags": null,
+                                "time": {
+                                    "days": "",
+                                    "duration": "",
+                                    "label": "",
+                                    "range": {
+                                        "end": "",
+                                        "start": ""
+                                    },
+                                    "schedule": {},
+                                    "timestamp": ""
+                                },
+                                "ttl": "",
+                                "xinput": {
+                                    "form": {
+                                        "data": null,
+                                        "mime_type": "",
+                                        "submission_id": "",
+                                        "url": ""
+                                    },
+                                    "required": false
+                                }
+                            }
+                        ],
+                        "locations": [
+                            {
+                                "3dspace": "",
+                                "address": "",
+                                "area_code": "",
+                                "circle": {
+                                    "gps": "",
+                                    "radius": ""
+                                },
+                                "city": {
+                                    "code": "",
+                                    "name": ""
+                                },
+                                "country": {
+                                    "code": "",
+                                    "name": ""
+                                },
+                                "descriptor": {
+                                    "additional_desc": {}
+                                },
+                                "district": "",
+                                "gps": "12.9349377,77.6055586",
+                                "id": "food-mall-location",
+                                "map_url": "",
+                                "polygon": "",
+                                "rating": 0,
+                                "state": {
+                                    "code": "",
+                                    "name": ""
+                                }
+                            }
+                        ],
+                        "offers": null,
+                        "payments": null,
+                        "rateable": false,
+                        "rating": 0,
+                        "tags": null,
+                        "time": {
+                            "days": "",
+                            "duration": "",
+                            "label": "",
+                            "range": {
+                                "end": "",
+                                "start": ""
+                            },
+                            "schedule": {},
+                            "timestamp": ""
+                        },
+                        "ttl": 0
+                    }
+                ],
+                "exp": "0001-01-01T00:00:00Z",
+                "ttl": ""
+            }
+        }
+    }
+]

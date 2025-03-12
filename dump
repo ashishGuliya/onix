@@ -1,0 +1,107 @@
+build docker image : sudo docker build -f Dockerfile.nsr -t nsr:alpha .
+run docker image: sudo docker run -d -p 8080:8080 nsr:alpha
+
+
+gcloud config set project ondc-seller-dev
+gcloud config set region asia-southeast1
+
+gcloud container clusters create bap --machine-type=e2-medium --num-nodes=2
+gcloud container clusters get-credentials bap
+kubectl get nodes
+
+
+kubectl get nodes
+
+sudo ocker build -t asia-southeast1.pkg.dev/ondc-seller-dev/onix/csr:latest -f -f Dockerfile.nsr  
+docker build -t your-region-docker.pkg.dev/ondc-seller-dev/asia-southeast1/onix/nsr:latest -f <path-to-networkSideReceiver-Dockerfile> .
+
+sudo docker build -t asia-southeast1-docker.pkg.dev/ondc-seller-dev/onix/nsr:latest -f Dockerfile.nsr .
+sudo docker build -t asia-southeast1-docker.pkg.dev/ondc-seller-dev/onix/csr:latest -f Dockerfile.csr .
+
+asia-southeast1-docker.pkg.dev/ondc-seller-dev/onix
+sudo docker push asia-southeast1-docker.pkg.dev/ondc-seller-dev/onix/csr:latest
+sudo docker push asia-southeast1-docker.pkg.dev/ondc-seller-dev/onix/nsr:latest
+
+asia-southeast1-docker.pkg.dev/ondc-seller-dev/onix/csr
+
+gcloud artifacts docker images list asia-southeast1-docker.pkg.dev/ondc-seller-dev/loggertest/hello-app
+
+docker-credential-gcr configure-docker asia-southeast1-docker.pkg.dev
+
+docker tag nsr asia-southeast1-docker.pkg.dev/ondc-seller-dev/onix/nsr:latest
+
+docker-credential-gcr configure-docker asia-southeast1-docker.pkg.dev
+
+gcloud auth configure-docker 
+
+
+gcloud run deploy bap-csr --image asia-southeast1-docker.pkg.dev/ondc-seller-dev/onix/csr:latest \
+    --platform managed --region asia-southeast1 --allow-unauthenticated
+
+gcloud run services add-iam-policy-binding myservice \
+--member='user:test-user@gmail.com' \
+--role='roles/run.invoker'
+
+
+gcloud run services proxy bpp-adapter --project ondc-seller-dev
+
+-e GOOGLE_APPLICATION_CREDENTIALS=/app/pubsub-key.json \
+           -v $(pwd)/pubsub-key.json:/app/pubsub-key.json \
+
+sudo docker run -p 8080:8080 asia-southeast1-docker.pkg.dev/ondc-seller-dev/onix/csr:latest-e GOOGLE_APPLICATION_CREDENTIALS=/app/pubsub-key.json \
+           -v $(pwd)/pubsub-key.json:/app/pubsub-key.json \
+
+{"ID":"0b0399cc-93ad-4090-9554-b3b3bf1118b3","Payload":{"TxnID":"","Criteria":{"Query":"Bread and Milk","Domain":"local_retail"}},"Endpoint":"/ack"}
+{"ID":"041feafd-882a-4cb5-a022-7a51ed92bb86","Payload":{"TxnID":"","Criteria":{"Query":"abc","Domain":"local_retail"}},"Endpoint":"/ack"}
+
+
+gcloud run deploy $SRVICE_NAME \
+  --image gcr.io/$PROJECT_ID/$SERVICE_NAME \
+  --region $REGION \
+  --platform managed \
+  --allow-unauthenticated \
+  --set-env-vars BUCKET_NAME=$BUCKET_NAME
+
+gcloud run deploy $SRVICE_NAME \
+  --image asia-southeast1-docker.pkg.dev/ondc-seller-dev/onix/sellerapp:latest \
+  --region asia-southeast1 \
+  --platform managed \
+  --allow-unauthenticated \
+
+
+curl -X POST "https://nsr-903496459467.us-central1.run.app/on_search"   \
+ -H "Authorization: Bearer $TOKEN"  -H "Content-Type: application/json"      \
+ -d '{"query": "Apple"}'
+
+
+
+curl -X POST "https://bppnr-903496459467.us-central1.run.app"   \
+ -H "Authorization: Bearer $TOKEN"  -H "Content-Type: application/json"      \
+ -d '{"query": "Apple"}'
+ 
+ gcloud projects get-iam-policy ondc-seller-dev \
+    --flatten="bindings[].members" \
+    --format='table(bindings.role, bindings.members)' \
+    | grep pubsub
+
+
+gcloud run services add-iam-policy-binding bppnc \
+    --member="serviceAccount:903496459467-compute@developer.gserviceaccount.com" \
+    --role="roles/run.invoker"
+
+
+gcloud pubsub subscriptions update pushToCaller \
+    --push-endpoint="https://bppnc-903496459467.us-central1.run.app" \
+    --push-auth-service-account=service-903496459467@gcp-sa-pubsub.iam.gserviceaccount.com
+
+
+    903496459467-compute@developer.gserviceaccount.com
+
+    sudo docker run --rm -v $(pwd):/app -w /app golang:1.24-bullseye sh -c   "go build -buildmode=plugin -buildvcs=false -o validatorA.so ./plugin/validatorA/cmd"
+
+
+
+    curl -X POST http://localhost:8080/reciever -H "Content-Type: application/json"       -d '{"context": {"action": "search"}}'
+
+
+     curl -X POST http://localhost:8080/caller -H "Content-Type: application/json"       -d '{"context": {"action": "search"}}'

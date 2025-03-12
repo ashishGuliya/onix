@@ -1,0 +1,32 @@
+<html>
+	<head><title>Beckn Buyer App</title></head>
+	<body>
+		<h1>Beckn Buyer App</h1>
+		<label for="search">Enter Search Query:</label>
+		<input type="text" id="search" placeholder="Type something...">
+		<button onclick="callAPI()">Search</button>	
+		<p id="msgId"></p>
+		<h2>Webhook Data</h2>
+		<pre id="webhookData"></pre>
+		<script>
+		function callAPI() {
+			const searchQuery = document.getElementById("search").value;
+            fetch(`/call-api?query=${encodeURIComponent(searchQuery)}`)
+                .then(response => response.text())
+                .then(data => alert(data));
+		}
+		setInterval(() => {
+			fetch('/webhook-data')
+				.then(response => response.json())
+				.then(data => {
+					document.getElementById('webhookData').innerText = JSON.stringify(data, null, 2);
+				});
+			fetch('/msgId')
+				.then(response => response.text())
+				.then(data => {
+					document.getElementById('msgId').innerText = data;
+				});
+		}, 2000);
+		</script>
+	</body>
+</html>
