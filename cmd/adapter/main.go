@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ashishGuliya/onix/shared/log"
-	"github.com/ashishGuliya/onix/shared/module"
-	"github.com/ashishGuliya/onix/shared/plugin"
+	"github.com/ashishGuliya/onix/pkg/log"
+	"github.com/ashishGuliya/onix/pkg/module"
+	"github.com/ashishGuliya/onix/pkg/plugin"
 
 	"gopkg.in/yaml.v2"
 )

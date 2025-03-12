@@ -5,13 +5,16 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
-	"onix/shared/log"
-	"onix/shared/plugin/definition"
 	"os"
 	"path/filepath"
 	"plugin"
+	"strings"
 	"time"
+
+	"github.com/ashishGuliya/onix/pkg/log"
+	"github.com/ashishGuliya/onix/pkg/plugin/definition"
 )
 
 type Manager struct {
@@ -27,10 +30,10 @@ func NewManager(ctx context.Context, cfg *ManagerConfig) (*Manager, func(), erro
 	if err := validateMgrCfg(cfg); err != nil {
 		return nil, nil, fmt.Errorf("Invalid config: %w", err)
 	}
-	log.Debugf(ctx, "PluginZipPath : %s", cfg.PluginZipPath)
-	if len(cfg.PluginZipPath) != 0 {
-		log.Debugf(ctx, "Unzipping files from  : %s to : %s", cfg.PluginZipPath, cfg.Root)
-		if err := unzip(cfg.PluginZipPath, cfg.Root); err != nil {
+	log.Debugf(ctx, "RemoteRoot : %s", cfg.RemoteRoot)
+	if len(cfg.RemoteRoot) != 0 {
+		log.Debugf(ctx, "Unzipping files from  : %s to : %s", cfg.RemoteRoot, cfg.Root)
+		if err := unzip(cfg.RemoteRoot, cfg.Root); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -49,17 +52,36 @@ func NewManager(ctx context.Context, cfg *ManagerConfig) (*Manager, func(), erro
 
 func plugins(ctx context.Context, cfg *ManagerConfig) (map[string]*plugin.Plugin, error) {
 	plugins := make(map[string]*plugin.Plugin)
-	for _, id := range cfg.Plugins {
-		log.Debugf(ctx, "Loading plugin: %s", id)
-		start := time.Now()
-		p, err := plugin.Open(path(cfg.Root, id))
+
+	err := filepath.WalkDir(cfg.Root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			return nil, fmt.Errorf("failed to open plugin %s: %w", id, err)
+			return err
 		}
-		elapsed := time.Since(start)
-		plugins[id] = p
-		log.Debugf(ctx, "Loaded plugin: %s in %s", id, elapsed)
+
+		if d.IsDir() {
+			return nil // Skip directories
+		}
+
+		if strings.HasSuffix(d.Name(), ".so") {
+			id := strings.TrimSuffix(d.Name(), ".so") // Extract plugin ID
+
+			log.Debugf(ctx, "Loading plugin: %s", id)
+			start := time.Now()
+			p, err := plugin.Open(path) // Use the full path
+			if err != nil {
+				return fmt.Errorf("failed to open plugin %s: %w", id, err)
+			}
+			elapsed := time.Since(start)
+			plugins[id] = p
+			log.Debugf(ctx, "Loaded plugin: %s in %s", id, elapsed)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
+
 	return plugins, nil
 }
 
@@ -132,11 +154,11 @@ func (m *Manager) Middleware(ctx context.Context, cfg *Config) (func(http.Handle
 }
 
 func (m *Manager) Step(ctx context.Context, cfg *Config) (definition.Step, error) {
-	mwp, err := provider[definition.StepProvider](m.plugins, cfg.ID)
+	sp, err := provider[definition.StepProvider](m.plugins, cfg.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
 	}
-	step, closer, error := mwp.New(ctx, cfg.Config)
+	step, closer, error := sp.New(ctx, cfg.Config)
 	if closer != nil {
 		m.closers = append(m.closers, closer)
 	}

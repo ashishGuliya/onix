@@ -8,10 +8,11 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"onix/shared/log"
-	"onix/shared/module/config"
-	"onix/shared/plugin"
-	"onix/shared/plugin/definition"
+
+	"github.com/ashishGuliya/onix/internal/module/config"
+	"github.com/ashishGuliya/onix/pkg/log"
+	"github.com/ashishGuliya/onix/pkg/plugin"
+	"github.com/ashishGuliya/onix/pkg/plugin/definition"
 )
 
 // processor orchestrates the execution of defined processing steps.
@@ -77,22 +78,32 @@ func (p *processor) Process(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Handle routing based on the defined route type
+	route(ctx, r, w, p)
+}
+
+func route(ctx *definition.StepContext, r *http.Request, w http.ResponseWriter, p *processor, pb *definition.Publisher) {
 	switch ctx.Route.Type {
 	case "url":
 		log.Infof(ctx.Context, "Forwarding request to URL: %s", ctx.Route.URL)
 		proxy(r, w, ctx.Route.URL)
+		return
 	case "publisher":
-		if p.publisher == nil {
+		if pb == nil {
 			err := fmt.Errorf("publisher plugin not configured")
 			log.Errorf(ctx.Context, err, "Invalid configuration")
 			http.Error(w, "Invalid configuration: Publisher plugin not configured", http.StatusInternalServerError)
 			return
 		}
 		log.Infof(ctx.Context, "Publishing message to: %s", ctx.Route.Publisher)
-		if err := p.publisher.Publish(ctx, ctx.Route.Publisher, ctx.Body); err != nil {
+		if err := pb.Publish(ctx, ctx.Route.Publisher, ctx.Body); err != nil {
 			log.Errorf(ctx.Context, err, "Failed to publish message")
 			http.Error(w, "Error publishing message", http.StatusInternalServerError)
+			return
 		}
+	default:
+		log.Errorf(ctx.Context, fmt.Errorf("Failed to publish message"), "")
+		http.Error(w, "Error publishing message", http.StatusInternalServerError)
+		return
 	}
 }
 

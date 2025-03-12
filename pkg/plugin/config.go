@@ -16,7 +16,6 @@ type Config struct {
 }
 
 type ManagerConfig struct {
-	Root          string   `yaml:"root"`
-	PluginZipPath string   `yaml:"pluginZipPath"`
-	Plugins       []string `yaml:"plugins"`
+	Root       string `yaml:"root"`
+	RemoteRoot string `yaml:"remoteRoot"`
 }
