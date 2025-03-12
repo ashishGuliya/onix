@@ -1,12 +1,12 @@
-# Read PLUGIN_NAMES from plugins.yaml
-PLUGIN_NAMES := $(shell python3 -c 'import yaml; with open("plugins.yaml", "r") as f: data = yaml.safe_load(f); print(" ".join(data.get("plugins", [])))')
+# Define the list of plugins
+PLUGIN_NAMES = gcpAuthMdw nopsigner router publisher reqpreprocessor nopschemavalidator nopsignvalidator
 
 .PHONY: install-plugins
 install-plugins:
 ifeq ($(strip $(PLUGIN_NAMES)),)
-        @echo "PLUGIN_NAMES is empty. No plugins to install."
+	@echo "PLUGIN_NAMES is empty. No plugins to install."
 else
-        ./scripts/install-plugin-gcs.sh $(PLUGIN_NAMES)
+	./scripts/install-plugin-gcs.sh $(PLUGIN_NAMES)
 endif
 
 .PHONY: deploy-bpp
