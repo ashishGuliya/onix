@@ -219,6 +219,7 @@ func unzip(src, dest string) error {
 
 		fpath := filepath.Join(dest, f.Name)
 		// Ensure directory exists
+		log.Debugf(context.Background(), "Pain : fpath: %s,filepath.Dir(fpath): %s", fpath, filepath.Dir(fpath))
 		if err := os.MkdirAll(filepath.Dir(fpath), os.ModePerm); err != nil {
 			return err
 		}
