@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/ashishGuliya/onix/plugin/reqpreprocessor"
 )
@@ -12,7 +13,12 @@ type provider struct{}
 
 // New creates a new Publisher instance.
 func (p provider) New(ctx context.Context, c map[string]string) (func(http.Handler) http.Handler, error) {
-	return reqpreprocessor.New(), nil
+	config := &reqpreprocessor.Config{}
+	if uuidKeysStr, ok := c["uuidKeys"]; ok {
+		config.UUIDKeys = strings.Split(uuidKeysStr, ",")
+	}
+
+	return reqpreprocessor.NewUUIDSetter(config)
 }
 
 // Provider is the exported symbol that the plugin manager will look for.
