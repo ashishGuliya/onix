@@ -18,6 +18,10 @@ func (p provider) New(ctx context.Context, c map[string]string) (func(http.Handl
 		config.UUIDKeys = strings.Split(uuidKeysStr, ",")
 	}
 
+	if role, ok := c["role"]; ok {
+		config.Role = role
+	}
+
 	return reqpreprocessor.NewUUIDSetter(config)
 }
 

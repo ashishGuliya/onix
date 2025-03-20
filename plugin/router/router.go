@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/ashishGuliya/onix/pkg/log"
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
 )
 
@@ -49,11 +50,23 @@ func (r *router) Route(ctx context.Context, url *url.URL, rb []byte) (*definitio
 	if !ok {
 		return nil, fmt.Errorf("invalid request.context.action json")
 	}
-	resp := &definition.Route{}
+
 	for _, route := range r.cfg.Routes {
 		if route.Action == rAction {
+			resp := &definition.Route{}
+			log.Debugf(ctx, "Got route: %#v", route)
 			resp.Type = route.Type
-			url.Parse(route.Target)
+			if resp.Type == "url" {
+				log.Debugf(ctx, "resp.Type : %s", route.Type)
+				url, err := url.Parse(route.Target)
+				if err != nil {
+					return nil, fmt.Errorf("url.Parse(%s): %w", route.Target, err)
+				}
+				resp.URL = url
+			} else {
+				resp.Publisher = route.Target
+			}
+			return resp, nil
 		}
 	}
 	return nil, fmt.Errorf("unsupported request.action: %v", rAction)

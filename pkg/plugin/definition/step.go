@@ -7,11 +7,9 @@ import (
 
 type StepContext struct {
 	context.Context
-	Request           *http.Request
-	Body              []byte
-	Route             *Route
-	SigningKey        string
-	SignValidationKey string
+	Request *http.Request
+	Body    []byte
+	Route   *Route
 }
 
 type Step interface {

@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/ashishGuliya/onix/plugin/router"
 
+	"github.com/ashishGuliya/onix/pkg/log"
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
 	"gopkg.in/yaml.v2"
 )
@@ -29,6 +31,8 @@ func config(ctx context.Context, path string) (*router.Config, error) {
 	if err := yaml.NewDecoder(file).Decode(&cfg); err != nil {
 		return nil, fmt.Errorf("could not decode config: %w", err)
 	}
+	b, _ := json.MarshalIndent(cfg, "", "  ")
+	log.Debugf(ctx, "Loaded %s, \n%s", path, string(b))
 	return &cfg, nil
 }
 

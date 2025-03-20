@@ -253,7 +253,12 @@ func Panicf(ctx context.Context, err error, format string, v ...any) {
 // Request logs an HTTP request.
 func Request(ctx context.Context, r *http.Request, body []byte) {
 	event := logger.Info()
-
+	// Iterate through headers and log them
+	for name, values := range r.Header {
+		for _, value := range values {
+			event = event.Str(name, value)
+		}
+	}
 	addCtx(ctx, event)
 
 	event.Str("method", r.Method).

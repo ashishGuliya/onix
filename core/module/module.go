@@ -19,7 +19,10 @@ type Config struct {
 type handlerProvider func(ctx context.Context, mgr *plugin.Manager, cfg *handler.Config) (http.Handler, error)
 
 var handlerProviders = map[handler.HandlerType]handlerProvider{
-	handler.HandlerTypeStd: handler.NewStdHandler,
+	handler.HandlerTypeStd:    handler.NewStdHandler,
+	handler.HandlerTypeRegSub: handler.NewRegSubscibeHandler,
+	handler.HandlerTypeNPSub:  handler.NewNPSubscibeHandler,
+	handler.HandlerTypeLookup: handler.NewLookHandler,
 }
 
 // AddHandlers registers the handlers for the application.
@@ -33,31 +36,39 @@ func Register(ctx context.Context, mCfgs []Config, mux *http.ServeMux, mgr *plug
 		}
 		h, err := rmp(ctx, mgr, &c.Handler)
 		if err != nil {
-			return err
+			return fmt.Errorf("%s : %w", c.Name, err)
 		}
 
 		h, err = chain(ctx, mgr, h, c.Handler.Plugins.Middleware)
 		if err != nil {
-			return fmt.Errorf("failed to add post processors: %w", err)
+			return fmt.Errorf("failed to add middleware: %w", err)
 
 		}
+		log.Debugf(ctx, "Registering handler %s, of type %s @ %s", c.Name, c.Handler.Type, c.Path)
 		mux.Handle(c.Path, h)
 	}
 	return nil
 }
 
-// addMiddleware adds middleware to a handler.
+// chain applies middleware to a handler in reverse order.
 func chain(ctx context.Context, mgr *plugin.Manager, handler http.Handler, mws []plugin.Config) (http.Handler, error) {
+	log.Debugf(ctx, "Applying %d middleware(s) to the handler", len(mws))
+
 	// Apply the middleware in reverse order.
 	for i := len(mws) - 1; i >= 0; i-- {
+		log.Debugf(ctx, "Loading middleware: %s", mws[i].ID)
+
 		mw, err := mgr.Middleware(ctx, &mws[i])
 		if err != nil {
-			// Get the middleware from the plugin manager.hared/ ./shared
-			return nil, err
+			log.Errorf(ctx, err, "Failed to load middleware %s: %v", mws[i].ID, err)
+			return nil, fmt.Errorf("failed to load middleware %s: %w", mws[i].ID, err)
 		}
+
 		// Apply the middleware to the handler.
 		handler = mw(handler)
+		log.Debugf(ctx, "Applied middleware: %s", mws[i].ID)
 	}
-	// Return the modified handler.
+
+	log.Debugf(ctx, "Middleware chain setup completed")
 	return handler, nil
 }

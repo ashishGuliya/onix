@@ -9,6 +9,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 
+	"github.com/ashishGuliya/onix/core/module/client"
 	"github.com/ashishGuliya/onix/pkg/log"
 	"github.com/ashishGuliya/onix/pkg/plugin"
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
@@ -19,6 +20,8 @@ type stdHandler struct {
 	signer          definition.Signer
 	steps           []definition.Step
 	signValidator   definition.SignValidator
+	cache           definition.Cache
+	km              definition.KeyManager
 	schemaValidator definition.SchemaValidator
 	router          definition.Router
 	publisher       definition.Publisher
@@ -29,17 +32,14 @@ func NewStdHandler(ctx context.Context, mgr *plugin.Manager, cfg *Config) (http.
 	p := &stdHandler{
 		steps: []definition.Step{},
 	}
-
 	// Initialize plugins
-	if err := p.initPlugins(ctx, mgr, &cfg.Plugins); err != nil {
+	if err := p.initPlugins(ctx, mgr, &cfg.Plugins, cfg.RegistryURL); err != nil {
 		return nil, fmt.Errorf("failed to initialize plugins: %w", err)
 	}
-
 	// Initialize steps
 	if err := p.initSteps(ctx, mgr, cfg); err != nil {
 		return nil, fmt.Errorf("failed to initialize steps: %w", err)
 	}
-
 	return p, nil
 }
 
@@ -53,12 +53,12 @@ func (p *stdHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r.Body.Close()
-
 	ctx := &definition.StepContext{
 		Context: r.Context(),
 		Request: r,
 		Body:    bodyBuffer.Bytes(),
 	}
+	log.Request(r.Context(), r, ctx.Body)
 
 	// Execute processing steps
 	for _, step := range p.steps {
@@ -81,6 +81,7 @@ func (p *stdHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func route(ctx *definition.StepContext, r *http.Request, w http.ResponseWriter, pb definition.Publisher) {
+	log.Debugf(ctx, "Routing to ctx.Route to %#v", ctx.Route)
 	switch ctx.Route.Type {
 	case "url":
 		log.Infof(ctx.Context, "Forwarding request to URL: %s", ctx.Route.URL)
@@ -119,51 +120,73 @@ func proxy(r *http.Request, w http.ResponseWriter, target *url.URL) {
 	proxy.ServeHTTP(w, r)
 }
 
+// loadPlugin is a generic function to load and validate plugins.
+func loadPlugin[T any](ctx context.Context, name string, cfg *plugin.Config, mgrFunc func(context.Context, *plugin.Config) (T, error)) (T, error) {
+	var zero T
+	if cfg == nil {
+		log.Debugf(ctx, "Skipping %s plugin: not configured", name)
+		return zero, nil
+	}
+
+	plugin, err := mgrFunc(ctx, cfg)
+	if err != nil {
+		return zero, fmt.Errorf("failed to load %s plugin (%s): %w", name, cfg.ID, err)
+	}
+
+	log.Debugf(ctx, "Loaded %s plugin: %s", name, cfg.ID)
+	return plugin, nil
+}
+
+func loadKeyManager(ctx context.Context, mgr *plugin.Manager, cache definition.Cache, cfg *plugin.Config, regURL string) (definition.KeyManager, error) {
+	if cfg == nil {
+		log.Debug(ctx, "Skipping KeyManager plugin: not configured")
+		return nil, nil
+	}
+	if cache == nil {
+		return nil, fmt.Errorf("failed to load KeyManager plugin (%s): Cache plugin not configured", cfg.ID)
+	}
+	rClient := client.NewRegisteryClient(&client.Config{RegisteryURL: regURL})
+	km, err := mgr.KeyManager(ctx, cache, rClient, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load cache plugin (%s): %w", cfg.ID, err)
+	}
+
+	log.Debugf(ctx, "Loaded Keymanager plugin: %s", cfg.ID)
+	return km, nil
+}
+
 // initPlugins initializes required plugins for the processor.
-func (p *stdHandler) initPlugins(ctx context.Context, mgr *plugin.Manager, cfg *pluginCfg) error {
+func (p *stdHandler) initPlugins(ctx context.Context, mgr *plugin.Manager, cfg *pluginCfg, regURL string) error {
 	var err error
-
-	if cfg.SignValidator != nil {
-		if p.signValidator, err = mgr.SignValidator(ctx, cfg.SignValidator); err != nil {
-			return fmt.Errorf("failed to load sign validator: %w", err)
-		}
+	if p.cache, err = loadPlugin(ctx, "Cache", cfg.Cache, mgr.Cache); err != nil {
+		return err
+	}
+	if p.km, err = loadKeyManager(ctx, mgr, p.cache, cfg.KeyManager, regURL); err != nil {
+		return err
+	}
+	if p.signValidator, err = loadPlugin(ctx, "SignValidator", cfg.SignValidator, mgr.SignValidator); err != nil {
+		return err
+	}
+	if p.schemaValidator, err = loadPlugin(ctx, "SchemaValidator", cfg.SchemaValidator, mgr.SchemaValidator); err != nil {
+		return err
+	}
+	if p.router, err = loadPlugin(ctx, "Router", cfg.Router, mgr.Router); err != nil {
+		return err
+	}
+	if p.publisher, err = loadPlugin(ctx, "Publisher", cfg.Publisher, mgr.Publisher); err != nil {
+		return err
+	}
+	if p.signer, err = loadPlugin(ctx, "Signer", cfg.Signer, mgr.Signer); err != nil {
+		return err
 	}
 
-	if cfg.SchemaValidator != nil {
-		if p.schemaValidator, err = mgr.Validator(ctx, cfg.SchemaValidator); err != nil {
-			return fmt.Errorf("failed to load schema validator: %w", err)
-		}
-	}
-
-	if cfg.Router != nil {
-		if p.router, err = mgr.Router(ctx, cfg.Router); err != nil {
-			return fmt.Errorf("failed to load router: %w", err)
-		}
-	}
-
-	if cfg.Publisher != nil {
-		if p.publisher, err = mgr.Publisher(ctx, cfg.Publisher); err != nil {
-			return fmt.Errorf("failed to load publisher: %w", err)
-		}
-	}
-
-	if cfg.Signer != nil {
-		if p.signer, err = mgr.Signer(ctx, cfg.Signer); err != nil {
-			return fmt.Errorf("failed to load signer: %w", err)
-		}
-	}
-
+	log.Debugf(ctx, "All required plugins successfully loaded for stdHandler")
 	return nil
 }
 
 // initSteps initializes and validates processing steps for the processor.
 func (p *stdHandler) initSteps(ctx context.Context, mgr *plugin.Manager, cfg *Config) error {
 	steps := make(map[string]definition.Step)
-
-	// Validate plugin dependencies before proceeding
-	if err := validateStepDependencies(cfg, p); err != nil {
-		return err
-	}
 
 	// Load plugin-based steps
 	for _, c := range cfg.Plugins.Steps {
@@ -176,44 +199,36 @@ func (p *stdHandler) initSteps(ctx context.Context, mgr *plugin.Manager, cfg *Co
 
 	// Register processing steps
 	for _, step := range cfg.Steps {
+		var s definition.Step
+		var err error
+
 		switch step {
 		case "sign":
-			p.steps = append(p.steps, &signStep{signer: p.signer})
+			s, err = newSignStep(p.signer, p.km)
 		case "validateSign":
-			p.steps = append(p.steps, &validateSignStep{validator: p.signValidator})
+			s, err = newValidateSignStep(p.signValidator, p.km)
 		case "validateSchema":
-			p.steps = append(p.steps, &validateSchemaStep{validator: p.schemaValidator})
-		case "broadcast":
-			p.steps = append(p.steps, &broadcastStep{})
+			s, err = newValidateSchemaStep(p.schemaValidator)
 		case "addRoute":
-			p.steps = append(p.steps, &addRouteStep{router: p.router})
+			s, err = newRouteStep(p.router)
+		case "broadcast":
+			s = &broadcastStep{}
 		default:
 			if customStep, exists := steps[step]; exists {
-				p.steps = append(p.steps, customStep)
+				s = customStep
 			} else {
 				return fmt.Errorf("unrecognized step: %s", step)
 			}
 		}
+
+		if err != nil {
+			return err
+		}
+
+		p.steps = append(p.steps, s)
 	}
 
 	log.Infof(ctx, "Processor steps initialized: %v", cfg.Steps)
-	return nil
-}
-
-// validateStepDependencies ensures required plugins are loaded for configured steps.
-func validateStepDependencies(cfg *Config, p *stdHandler) error {
-	if contains(cfg.Steps, "Sign") && p.signer == nil {
-		return fmt.Errorf("invalid config: Signer plugin not configured")
-	}
-	if contains(cfg.Steps, "ValidateSign") && p.signValidator == nil {
-		return fmt.Errorf("invalid config: SignValidator plugin not configured")
-	}
-	if contains(cfg.Steps, "ValidateSchema") && p.schemaValidator == nil {
-		return fmt.Errorf("invalid config: SchemaValidator plugin not configured")
-	}
-	if contains(cfg.Steps, "GetRoute") && p.router == nil {
-		return fmt.Errorf("invalid config: Router plugin not configured")
-	}
 	return nil
 }
 

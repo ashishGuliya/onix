@@ -95,11 +95,13 @@ func provider[T any](plugins map[string]*plugin.Plugin, id string) (T, error) {
 	if err != nil {
 		return zero, fmt.Errorf("failed to lookup Provider for %s: %w", id, err)
 	}
+	log.Debugf(context.Background(), "Provider type: %T\n", provider)
 
 	pp, ok := provider.(T)
 	if !ok {
 		return zero, fmt.Errorf("failed to cast Provider for %s", id)
 	}
+	log.Debugf(context.Background(), "Casting successful for: %s", provider)
 	return pp, nil
 }
 
@@ -128,7 +130,7 @@ func (m *Manager) addCloser(closer func()) {
 	}
 }
 
-func (m *Manager) Validator(ctx context.Context, cfg *Config) (definition.SchemaValidator, error) {
+func (m *Manager) SchemaValidator(ctx context.Context, cfg *Config) (definition.SchemaValidator, error) {
 	vp, err := provider[definition.SchemaValidatorProvider](m.plugins, cfg.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
@@ -165,6 +167,23 @@ func (m *Manager) Step(ctx context.Context, cfg *Config) (definition.Step, error
 	return step, error
 }
 
+func (m *Manager) Cache(ctx context.Context, cfg *Config) (definition.Cache, error) {
+	cp, err := provider[definition.CacheProvider](m.plugins, cfg.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
+	}
+	c, close, err := cp.New(ctx, cfg.Config)
+	if err != nil {
+		return nil, err
+	}
+	m.addCloser(func() {
+		if err := close(); err != nil {
+			panic(err)
+		}
+	})
+	return c, nil
+}
+
 func (m *Manager) Signer(ctx context.Context, cfg *Config) (definition.Signer, error) {
 	sp, err := provider[definition.SignerProvider](m.plugins, cfg.ID)
 	if err != nil {
@@ -174,10 +193,15 @@ func (m *Manager) Signer(ctx context.Context, cfg *Config) (definition.Signer, e
 	if err != nil {
 		return nil, err
 	}
-	m.addCloser(closer)
+	if closer != nil {
+		m.addCloser(func() {
+			if err := closer(); err != nil {
+				panic(err)
+			}
+		})
+	}
 	return s, nil
 }
-
 func (m *Manager) Encryptor(ctx context.Context, cfg *Config) (definition.Encryptor, error) {
 	ep, err := provider[definition.EncryptorProvider](m.plugins, cfg.ID)
 	if err != nil {
@@ -199,7 +223,38 @@ func (m *Manager) SignValidator(ctx context.Context, cfg *Config) (definition.Si
 	if err != nil {
 		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
 	}
-	return svp.New(ctx, cfg.Config)
+	v, closer, err := svp.New(ctx, cfg.Config)
+	if err != nil {
+		return nil, err
+	}
+	if closer != nil {
+		m.addCloser(func() {
+			if err := closer(); err != nil {
+				panic(err)
+			}
+		})
+	}
+	return v, nil
+}
+
+// KeyManager returns a KeyManager instance based on the provided configuration.
+// It reuses the loaded provider.
+func (m *Manager) KeyManager(ctx context.Context, cache definition.Cache, rClient definition.RegistryLookup, cfg *Config) (definition.KeyManager, error) {
+
+	kmp, err := provider[definition.KeyManagerProvider](m.plugins, cfg.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
+	}
+	km, close, err := kmp.New(ctx, cache, rClient, cfg.Config)
+	if err != nil {
+		return nil, err
+	}
+	m.addCloser(func() {
+		if err := close(); err != nil {
+			panic(err)
+		}
+	})
+	return km, nil
 }
 
 // Unzip extracts a ZIP file to the specified destination

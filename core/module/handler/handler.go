@@ -9,7 +9,10 @@ import (
 type HandlerType string
 
 const (
-	HandlerTypeStd HandlerType = "std"
+	HandlerTypeStd    HandlerType = "std"
+	HandlerTypeRegSub HandlerType = "regSub"
+	HandlerTypeNPSub  HandlerType = "npSub"
+	HandlerTypeLookup HandlerType = "lookUp"
 )
 
 type pluginCfg struct {
@@ -18,14 +21,17 @@ type pluginCfg struct {
 	Publisher       *plugin.Config  `yaml:"publisher,omitempty"`
 	Signer          *plugin.Config  `yaml:"signer,omitempty"`
 	Router          *plugin.Config  `yaml:"router,omitempty"`
+	Cache           *plugin.Config  `yaml:"cache,omitempty"`
+	KeyManager      *plugin.Config  `yaml:"keyManager,omitempty"`
 	Middleware      []plugin.Config `yaml:"middleware,omitempty"`
 	Steps           []plugin.Config
 }
 
 type Config struct {
-	Plugins pluginCfg `yaml:"plugin"`
-	Steps   []string
-	Type    HandlerType
+	Plugins     pluginCfg `yaml:"plugins"`
+	Steps       []string
+	Type        HandlerType
+	RegistryURL string `yaml:"registryUrl"`
 }
 
 // Step represents a named step

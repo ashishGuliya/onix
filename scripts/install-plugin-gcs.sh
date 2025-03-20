@@ -4,7 +4,7 @@
 set -e
 
 # Define Google Cloud Storage bucket
-GCS_BUCKET="gs://ondc-seller-dev-onix/plugins/"
+GCS_BUCKET="gs://beckn-onix-demo/plugins/"
 
 # Define output directory for compiled plugins
 PLUGIN_OUTPUT_DIR="./generated"

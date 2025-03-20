@@ -16,6 +16,7 @@ import (
 // Config holds the configuration for the middleware.
 type Config struct {
 	UUIDKeys []string
+	Role     string
 }
 
 // contextKey is a private constant for the context key.
@@ -52,9 +53,15 @@ func NewUUIDSetter(cfg *Config) (func(http.Handler) http.Handler, error) {
 				http.Error(w, fmt.Sprintf("%s field is not a map.", contextKey), http.StatusBadRequest)
 				return
 			}
-
+			var subID any
+			switch cfg.Role {
+			case "bap":
+				subID = contextData["bap_id"]
+			case "bpp":
+				subID = contextData["bpp_id"]
+			}
+			ctx := context.WithValue(r.Context(), "subscriber_id", subID)
 			// Update keys with UUIDs.
-			ctx := r.Context()
 			for _, key := range cfg.UUIDKeys {
 				value := uuid.NewString()
 				update(contextData, key, value)
@@ -91,9 +98,6 @@ func update(wrapper map[string]any, name string, value any) any {
 func validateConfig(cfg *Config) error {
 	if cfg == nil {
 		return errors.New("config cannot be nil")
-	}
-	if len(cfg.UUIDKeys) == 0 {
-		return errors.New("UUIDKeys cannot be empty")
 	}
 	for _, key := range cfg.UUIDKeys {
 		if key == "" {

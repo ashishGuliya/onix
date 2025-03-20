@@ -97,7 +97,7 @@ gcloud pubsub subscriptions update pushToCaller \
 
     903496459467-compute@developer.gserviceaccount.com
 
-    sudo docker run --rm -v $(pwd):/app -w /app golang:1.24-bullseye sh -c   "go build -buildmode=plugin -buildvcs=false -o validatorA.so ./plugin/validatorA/cmd"
+    sudo docker run --rm -v $(pwd):/app -w /app golang:1.24-bullseye sh -c   "go build -buildmode=plugin -buildvcs=false -o sv.so ./plugin/signvalidator/cmd"
 
 
 

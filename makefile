@@ -1,5 +1,5 @@
 # Define the list of plugins
-PLUGIN_NAMES = gcpAuthMdw nopsigner router publisher reqpreprocessor nopschemavalidator nopsignvalidator
+PLUGIN_NAMES = signer router secretskeymanager publisher redis reqpreprocessor nopschemavalidator signvalidator
 
 .PHONY: install-plugins
 install-plugins:
