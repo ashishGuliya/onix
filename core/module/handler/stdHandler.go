@@ -13,6 +13,7 @@ import (
 	"github.com/ashishGuliya/onix/pkg/log"
 	"github.com/ashishGuliya/onix/pkg/plugin"
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
+	"github.com/ashishGuliya/onix/pkg/response" // Import the response package
 )
 
 // stdHandler orchestrates the execution of defined processing steps.
@@ -49,7 +50,9 @@ func (p *stdHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var bodyBuffer bytes.Buffer
 	if _, err := io.Copy(&bodyBuffer, r.Body); err != nil {
 		log.Errorf(r.Context(), err, "Failed to read request body")
-		http.Error(w, "Failed to read request body", http.StatusBadRequest)
+		resp, _ := response.Nack(r.Context(), response.InvalidRequestErrorType, "Failed to read request body", []byte{})
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(resp)
 		return
 	}
 	r.Body.Close()
@@ -64,7 +67,9 @@ func (p *stdHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, step := range p.steps {
 		if err := step.Run(ctx); err != nil {
 			log.Errorf(r.Context(), err, "Step execution failed: %T", step)
-			http.Error(w, "Internal error during processing", http.StatusInternalServerError)
+			resp, _ := response.Nack(r.Context(), response.InternalServerErrorType, "Internal error during processing", []byte{})
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(resp)
 			return
 		}
 	}
@@ -91,18 +96,24 @@ func route(ctx *definition.StepContext, r *http.Request, w http.ResponseWriter, 
 		if pb == nil {
 			err := fmt.Errorf("publisher plugin not configured")
 			log.Errorf(ctx.Context, err, "Invalid configuration")
-			http.Error(w, "Invalid configuration: Publisher plugin not configured", http.StatusInternalServerError)
+			resp, _ := response.Nack(ctx.Context, response.InternalServerErrorType, "Invalid configuration: Publisher plugin not configured", []byte{})
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(resp)
 			return
 		}
 		log.Infof(ctx.Context, "Publishing message to: %s", ctx.Route.Publisher)
 		if err := pb.Publish(ctx, ctx.Route.Publisher, ctx.Body); err != nil {
 			log.Errorf(ctx.Context, err, "Failed to publish message")
-			http.Error(w, "Error publishing message", http.StatusInternalServerError)
+			resp, _ := response.Nack(ctx.Context, response.InternalServerErrorType, "Error publishing message", []byte{})
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(resp)
 			return
 		}
 	default:
-		log.Errorf(ctx.Context, fmt.Errorf("Failed to publish message"), "")
-		http.Error(w, "Error publishing message", http.StatusInternalServerError)
+		log.Errorf(ctx.Context, fmt.Errorf("failed to publish message"), "")
+		resp, _ := response.Nack(ctx.Context, response.InternalServerErrorType, "Error publishing message", []byte{})
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(resp)
 		return
 	}
 }

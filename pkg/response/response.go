@@ -12,6 +12,9 @@ type ErrorType string
 const (
 	SchemaValidationErrorType ErrorType = "SCHEMA_VALIDATION_ERROR"
 	InvalidRequestErrorType   ErrorType = "INVALID_REQUEST"
+	InternalServerErrorType   ErrorType = "INTERNAL_SERVER_ERROR"
+	NotFoundType              ErrorType = "NOT_FOUND"
+	MethodNotAllowedType      ErrorType = "METHOD_NOT_ALLOWED"
 )
 
 type BecknRequest struct {
@@ -48,8 +51,20 @@ var errorMap = map[ErrorType]Error{
 		Message: "Schema validation failed",
 	},
 	InvalidRequestErrorType: {
-		Code:    "401",
+		Code:    "400",
 		Message: "Invalid request format",
+	},
+	InternalServerErrorType: {
+		Code:    "500",
+		Message: "Internal server error",
+	},
+	NotFoundType: {
+		Code:    "404",
+		Message: "Resource not found",
+	},
+	MethodNotAllowedType: {
+		Code:    "405",
+		Message: "Method not allowed",
 	},
 }
 

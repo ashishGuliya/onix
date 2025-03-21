@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/ashishGuliya/onix/core/module/client"
@@ -11,6 +12,7 @@ import (
 	"github.com/ashishGuliya/onix/pkg/plugin"
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
 	"github.com/ashishGuliya/onix/pkg/protocol"
+	"github.com/ashishGuliya/onix/pkg/response"
 )
 
 type registryClient interface {
@@ -62,30 +64,48 @@ func (h *npSubscibeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Request(r.Context(), r, nil)
 	// Ensure the request method is POST
 	if r.Method != http.MethodPost {
-		http.Error(w, "invalid request method, only POST allowed", http.StatusMethodNotAllowed)
+		resp, _ := response.Nack(r.Context(), response.MethodNotAllowedType, "invalid request method, only POST allowed", []byte{})
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write(resp)
 		return
 	}
 	// Parse request body
 	var reqPayload protocol.Subscription
-	if err := json.NewDecoder(r.Body).Decode(&reqPayload); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Errorf(r.Context(), err, "Reg Subscribe handler: Bad Request, could not read body")
+		resp, _ := response.Nack(r.Context(), response.InvalidRequestErrorType, "could not read body", []byte{})
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(resp)
+		return
+	}
+	if err := json.Unmarshal(body, &reqPayload); err != nil {
+		resp, _ := response.Nack(r.Context(), response.InvalidRequestErrorType, "invalid request body", body)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(resp)
 		return
 	}
 
 	// Validate subscriber_id
 	if reqPayload.SubscriberID == "" {
-		http.Error(w, "missing subscriber_id", http.StatusBadRequest)
+		resp, _ := response.Nack(r.Context(), response.InvalidRequestErrorType, "missing subscriber_id", body)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(resp)
 		return
 	}
 	// Validate subscriber_id
 	if reqPayload.URL == "" {
-		http.Error(w, "missing subscriber url", http.StatusBadRequest)
+		resp, _ := response.Nack(r.Context(), response.InvalidRequestErrorType, "missing subscriber url", body)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(resp)
 		return
 	}
 	keys, err := h.km.GenerateKeyPairs()
 	if err != nil {
 		log.Errorf(r.Context(), err, "failed to generate keys")
-		http.Error(w, "failed to generate keys", http.StatusInternalServerError)
+		resp, _ := response.Nack(r.Context(), response.InternalServerErrorType, "Internal Server Error", body)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(resp)
 		return
 	}
 	log.Debugf(r.Context(), "got keys %#v", keys)
@@ -99,15 +119,20 @@ func (h *npSubscibeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.rClient.Subscribe(r.Context(), reqData); err != nil {
 		log.Errorf(r.Context(), err, "Call to registery failed")
-		http.Error(w, "failed to send request", http.StatusInternalServerError)
+		resp, _ := response.Nack(r.Context(), response.InternalServerErrorType, "Internal Server Error", body)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(resp)
 		return
 	}
 	if err := h.km.StorePrivateKeys(r.Context(), reqPayload.SubscriberID, keys); err != nil {
 		log.Errorf(r.Context(), err, "StorePrivateKeys failed")
-		http.Error(w, "failed to StorePrivateKeys", http.StatusInternalServerError)
+		resp, _ := response.Nack(r.Context(), response.InternalServerErrorType, "Internal Server Error", body)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(resp)
 		return
 	}
 	// Forward the response back to the client
+	resp, _ := response.Acknowledge(r.Context(), body)
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Successful"))
+	w.Write(resp)
 }

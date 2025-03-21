@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/ashishGuliya/onix/pkg/plugin"
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
 	"github.com/ashishGuliya/onix/pkg/protocol"
+	"github.com/ashishGuliya/onix/pkg/response"
 )
 
 // regSubscibeHandler encapsulates the subscription logic.
@@ -44,30 +46,47 @@ func (p *regSubscibeHandler) initPlugins(ctx context.Context, mgr *plugin.Manage
 // SubscribeHandler processes subscription requests.
 func (s *regSubscibeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Debug(r.Context(), "Reg Subscribe handler called.")
-	// Parse request body
-	var req protocol.Subscription
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Errorf(r.Context(), err, "Reg Subscribe handler: Bad Request")
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+
+	bodyBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Errorf(r.Context(), err, "Error reading request body")
+		nackResponse, _ := response.Nack(r.Context(), response.InvalidRequestErrorType, "Error reading request body", []byte{})
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(nackResponse)
 		return
 	}
+
+	var req protocol.Subscription
+	if err2 := json.Unmarshal(bodyBytes, &req); err2 != nil {
+		log.Errorf(r.Context(), err2, "Reg Subscribe handler: Bad Request")
+		nackResponse, _ := response.Nack(r.Context(), response.InvalidRequestErrorType, err2.Error(), bodyBytes)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(nackResponse)
+		return
+	}
+
 	// Validate the request
 	if err := validateSubscriptionReq(&req); err != nil {
 		log.Errorf(r.Context(), err, "Reg Subscribe handler: Bad Request")
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		nackResponse, _ := response.Nack(r.Context(), response.InvalidRequestErrorType, err.Error(), bodyBytes)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(nackResponse)
 		return
 	}
 
 	// Process subscription
 	if err := s.subscribe(&req); err != nil {
 		log.Errorf(r.Context(), err, "failed to process subscription")
-		http.Error(w, "failed to process subscription", http.StatusInternalServerError)
+		nackResponse, _ := response.Nack(r.Context(), response.InternalServerErrorType, "failed to process subscription", bodyBytes)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(nackResponse)
 		return
 	}
 
 	// Respond with success
+	ackResponse, _ := response.Acknowledge(r.Context(), bodyBytes)
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Subscription successful"))
+	w.Write(ackResponse)
 }
 
 // validate checks if all required fields are present and valid.
@@ -139,14 +158,27 @@ func (h *lookUpHandler) initPlugins(ctx context.Context, mgr *plugin.Manager, cf
 // LookupHandler handles the lookup requests.
 func (h *lookUpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		nackResponse, _ := response.Nack(r.Context(), response.MethodNotAllowedType, "Method Not Allowed", []byte{})
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write(nackResponse)
 		return
 	}
 	log.Debug(r.Context(), "Reg Lookup handler called.")
-	var req protocol.Subscription
-	err := json.NewDecoder(r.Body).Decode(&req)
+
+	bodyBytes, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Errorf(r.Context(), err, "Error reading request body")
+		nackResponse, _ := response.Nack(r.Context(), response.InvalidRequestErrorType, "Error reading request body", []byte{})
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(nackResponse)
+		return
+	}
+
+	var req protocol.Subscription
+	if err2 := json.Unmarshal(bodyBytes, &req); err2 != nil {
+		nackResponse, _ := response.Nack(r.Context(), response.InvalidRequestErrorType, err2.Error(), bodyBytes)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(nackResponse)
 		return
 	}
 
@@ -157,20 +189,31 @@ func (h *lookUpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	cachedValue, err := h.cache.Get(ctx, cacheKey)
 	if err != nil {
-		http.Error(w, "Subscriber ID not found", http.StatusNotFound)
+		nackResponse, _ := response.Nack(r.Context(), response.NotFoundType, "Subscriber ID not found", bodyBytes)
+		w.WriteHeader(http.StatusNotFound)
+		w.Write(nackResponse)
 		return
 	}
 
 	var subData protocol.Subscription
 	err = json.Unmarshal([]byte(cachedValue), &subData)
 	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		nackResponse, _ := response.Nack(r.Context(), response.InternalServerErrorType, "Internal Server Error", bodyBytes)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(nackResponse)
 		log.Errorf(r.Context(), err, "Error unmarshaling cached data")
 		return
 	}
 
 	// Send the result as the response
 	w.Header().Set("Content-Type", "application/json")
+	ackResponse, err3 := json.Marshal(response.BecknResponse{Context: map[string]interface{}{}, Message: response.Message{Ack: struct {
+		Status string `json:"status,omitempty"`
+	}{Status: "ACK"}}})
+	if err3 != nil {
+		log.Errorf(r.Context(), err3, "error creating ack response")
+	}
+	w.Write(ackResponse)
 	err = json.NewEncoder(w).Encode([]protocol.Subscription{subData})
 	if err != nil {
 		log.Errorf(r.Context(), err, "Error encoding JSON")
