@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/ashishGuliya/onix/plugin/gcpAuthMdw"
+	"github.com/ashishGuliya/onix/pkg/plugin/implementation/gcpAuthMdw"
 )
 
 // provider implements the PublisherProvider interface.

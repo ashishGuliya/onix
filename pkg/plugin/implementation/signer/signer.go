@@ -21,8 +21,8 @@ func New() (*signer, func() error, error) {
 	return s, nil, nil
 }
 
-// hash generates a signing string using BLAKE-512 hashing.
-func hash(payload []byte, createdAt, expiresAt int64) (string, error) {
+// signingStr generates a signing string using BLAKE-512 hashing.
+func signingStr(payload []byte, createdAt, expiresAt int64) (string, error) {
 	hasher, _ := blake2b.New512(nil)
 
 	_, err := hasher.Write(payload)
@@ -54,7 +54,7 @@ func generateSignature(signingString []byte, privateKeyBase64 string) ([]byte, e
 // Sign generates a digital signature for the provided payload.
 func (s *signer) Sign(ctx context.Context, body []byte, privateKeyBase64 string, createdAt, expiresAt int64) (string, error) {
 	log.Debugf(ctx, "Attempting to sign with Key %s", privateKeyBase64)
-	signingString, err := hash(body, createdAt, expiresAt)
+	signingString, err := signingStr(body, createdAt, expiresAt)
 	if err != nil {
 		return "", err
 	}

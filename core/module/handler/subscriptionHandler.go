@@ -8,14 +8,14 @@ import (
 
 	"github.com/ashishGuliya/onix/core/module/client"
 	"github.com/ashishGuliya/onix/pkg/log"
+	"github.com/ashishGuliya/onix/pkg/model"
 	"github.com/ashishGuliya/onix/pkg/plugin"
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
-	"github.com/ashishGuliya/onix/pkg/protocol"
 )
 
 type registryClient interface {
-	Subscribe(ctx context.Context, subscription *protocol.Subscription) error
-	Lookup(ctx context.Context, subscription *protocol.Subscription) ([]protocol.Subscription, error)
+	Subscribe(ctx context.Context, subscription *model.Subscription) error
+	Lookup(ctx context.Context, subscription *model.Subscription) ([]model.Subscription, error)
 }
 
 // regSubscibeHandler encapsulates the subscription logic.
@@ -66,7 +66,7 @@ func (h *npSubscibeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Parse request body
-	var reqPayload protocol.Subscription
+	var reqPayload model.Subscription
 	if err := json.NewDecoder(r.Body).Decode(&reqPayload); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
@@ -90,7 +90,7 @@ func (h *npSubscibeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Debugf(r.Context(), "got keys %#v", keys)
 	// Create subscription request
-	reqData := &protocol.Subscription{
+	reqData := &model.Subscription{
 		KeyID:            keys.UniqueKeyID,
 		SigningPublicKey: keys.SigningPublic,
 		EncrPublicKey:    keys.EncrPublic,

@@ -8,6 +8,7 @@ import (
 	"github.com/ashishGuliya/onix/core/module/handler"
 	"github.com/ashishGuliya/onix/pkg/log"
 	"github.com/ashishGuliya/onix/pkg/plugin"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type Config struct {
@@ -38,8 +39,10 @@ func Register(ctx context.Context, mCfgs []Config, mux *http.ServeMux, mgr *plug
 		if err != nil {
 			return fmt.Errorf("%s : %w", c.Name, err)
 		}
-
-		h, err = chain(ctx, mgr, h, c.Handler.Plugins.Middleware)
+		if len(c.Handler.Trace) != 0 {
+			h = otelhttp.NewHandler(mux, c.Name)
+		}
+		h, err = addMiddleware(ctx, mgr, h, &c.Handler)
 		if err != nil {
 			return fmt.Errorf("failed to add middleware: %w", err)
 
@@ -50,22 +53,23 @@ func Register(ctx context.Context, mCfgs []Config, mux *http.ServeMux, mgr *plug
 	return nil
 }
 
-// chain applies middleware to a handler in reverse order.
-func chain(ctx context.Context, mgr *plugin.Manager, handler http.Handler, mws []plugin.Config) (http.Handler, error) {
+// addMiddleware applies middleware to a handler in reverse order.
+func addMiddleware(ctx context.Context, mgr *plugin.Manager, handler http.Handler, hCfg *handler.Config) (http.Handler, error) {
+	mws := hCfg.Plugins.Middleware
 	log.Debugf(ctx, "Applying %d middleware(s) to the handler", len(mws))
-
 	// Apply the middleware in reverse order.
 	for i := len(mws) - 1; i >= 0; i-- {
 		log.Debugf(ctx, "Loading middleware: %s", mws[i].ID)
-
 		mw, err := mgr.Middleware(ctx, &mws[i])
 		if err != nil {
 			log.Errorf(ctx, err, "Failed to load middleware %s: %v", mws[i].ID, err)
 			return nil, fmt.Errorf("failed to load middleware %s: %w", mws[i].ID, err)
 		}
-
 		// Apply the middleware to the handler.
 		handler = mw(handler)
+		if hCfg.Trace[mws[i].ID] {
+			handler = tracingWrapper(mws[i].ID, "middleware", handler)
+		}
 		log.Debugf(ctx, "Applied middleware: %s", mws[i].ID)
 	}
 

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ashishGuliya/onix/pkg/protocol"
+	"github.com/ashishGuliya/onix/pkg/model"
 
 	retryablehttp "github.com/hashicorp/go-retryablehttp"
 )
@@ -41,7 +41,7 @@ func NewRegisteryClient(config *Config) *registeryClient {
 }
 
 // Subscribe calls the /subscribe endpoint with retry.
-func (c *registeryClient) Subscribe(ctx context.Context, subscription *protocol.Subscription) error {
+func (c *registeryClient) Subscribe(ctx context.Context, subscription *model.Subscription) error {
 	subscribeURL := fmt.Sprintf("%s/subscribe", c.Config.RegisteryURL)
 
 	jsonData, err := json.Marshal(subscription)
@@ -68,7 +68,7 @@ func (c *registeryClient) Subscribe(ctx context.Context, subscription *protocol.
 }
 
 // Lookup calls the /lookup endpoint with retry and returns a slice of Subscription.
-func (c *registeryClient) Lookup(ctx context.Context, subscription *protocol.Subscription) ([]protocol.Subscription, error) {
+func (c *registeryClient) Lookup(ctx context.Context, subscription *model.Subscription) ([]model.Subscription, error) {
 	lookupURL := fmt.Sprintf("%s/lookUp", c.Config.RegisteryURL)
 
 	jsonData, err := json.Marshal(subscription)
@@ -97,7 +97,7 @@ func (c *registeryClient) Lookup(ctx context.Context, subscription *protocol.Sub
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	var results []protocol.Subscription
+	var results []model.Subscription
 	err = json.Unmarshal(body, &results)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal response body: %w", err)

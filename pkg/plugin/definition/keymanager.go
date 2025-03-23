@@ -3,7 +3,7 @@ package definition
 import (
 	"context"
 
-	"github.com/ashishGuliya/onix/pkg/protocol"
+	"github.com/ashishGuliya/onix/pkg/model"
 )
 
 type Keyset struct {
@@ -31,5 +31,5 @@ type KeyManagerProvider interface {
 }
 
 type RegistryLookup interface {
-	Lookup(ctx context.Context, req *protocol.Subscription) ([]protocol.Subscription, error)
+	Lookup(ctx context.Context, req *model.Subscription) ([]model.Subscription, error)
 }

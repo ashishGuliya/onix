@@ -3,9 +3,8 @@ package main
 import (
 	"context"
 
-	"github.com/ashishGuliya/onix/plugin/publisher"
-
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
+	"github.com/ashishGuliya/onix/pkg/plugin/implementation/publisher"
 
 	"google.golang.org/api/option"
 )

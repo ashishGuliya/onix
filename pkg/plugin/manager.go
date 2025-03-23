@@ -105,10 +105,6 @@ func provider[T any](plugins map[string]*plugin.Plugin, id string) (T, error) {
 	return pp, nil
 }
 
-func path(root string, id string) string {
-	return fmt.Sprintf("%s/%s.so", root, id)
-}
-
 // GetPublisher returns a Publisher instance based on the provided configuration.
 // It reuses the loaded provider.
 func (m *Manager) Publisher(ctx context.Context, cfg *Config) (definition.Publisher, error) {
@@ -135,7 +131,18 @@ func (m *Manager) SchemaValidator(ctx context.Context, cfg *Config) (definition.
 	if err != nil {
 		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
 	}
-	return vp.New(ctx, cfg.Config)
+	v, closer, err := vp.New(ctx, cfg.Config)
+	if err != nil {
+		return nil, err
+	}
+	if closer != nil {
+		m.addCloser(func() {
+			if err := closer(); err != nil {
+				panic(err)
+			}
+		})
+	}
+	return v, nil
 }
 
 func (m *Manager) Router(ctx context.Context, cfg *Config) (definition.Router, error) {

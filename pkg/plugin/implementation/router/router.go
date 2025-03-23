@@ -7,7 +7,7 @@ import (
 	"net/url"
 
 	"github.com/ashishGuliya/onix/pkg/log"
-	"github.com/ashishGuliya/onix/pkg/plugin/definition"
+	"github.com/ashishGuliya/onix/pkg/model"
 )
 
 type Config struct {
@@ -28,32 +28,32 @@ type router struct {
 	cfg *Config
 }
 
-func (r *router) Route(ctx context.Context, url *url.URL, rb []byte) (*definition.Route, error) {
+func (r *router) Route(ctx context.Context, url *url.URL, rb []byte) (*model.Route, error) {
 
 	var data map[string]json.RawMessage
 	if err := json.Unmarshal(rb, &data); err != nil {
-		return nil, fmt.Errorf("invalid request body json")
+		return nil, model.NewBadReqErrf("invalid request body json")
 	}
 	// Get the "context" field as a RawMessage.
 	contextRaw, ok := data["context"]
 	if !ok {
-		return nil, fmt.Errorf("context field not found")
+		return nil, model.NewBadReqErrf("context field not found")
 	}
 	// Unmarshal the "context" RawMessage into a map.
 	var contextData map[string]interface{}
 	if err := json.Unmarshal(contextRaw, &contextData); err != nil {
-		return nil, fmt.Errorf("invalid request.context json")
+		return nil, model.NewBadReqErrf("invalid request.context json")
 	}
 
 	// Update the TransactionID in the Context.
 	rAction, ok := contextData["action"].(string)
 	if !ok {
-		return nil, fmt.Errorf("invalid request.context.action json")
+		return nil, model.NewBadReqErrf("invalid request.context.action json")
 	}
 
 	for _, route := range r.cfg.Routes {
 		if route.Action == rAction {
-			resp := &definition.Route{}
+			resp := &model.Route{}
 			log.Debugf(ctx, "Got route: %#v", route)
 			resp.Type = route.Type
 			if resp.Type == "url" {
@@ -69,7 +69,7 @@ func (r *router) Route(ctx context.Context, url *url.URL, rb []byte) (*definitio
 			return resp, nil
 		}
 	}
-	return nil, fmt.Errorf("unsupported request.action: %v", rAction)
+	return nil, model.NewNotFoundErrf("unsupported request.action: %v", rAction)
 }
 
 func valid(c *Config) error {

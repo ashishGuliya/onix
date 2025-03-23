@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 
+	"github.com/ashishGuliya/onix/pkg/model"
 	"github.com/ashishGuliya/onix/pkg/plugin"
 )
 
@@ -28,10 +29,13 @@ type pluginCfg struct {
 }
 
 type Config struct {
-	Plugins     pluginCfg `yaml:"plugins"`
-	Steps       []string
-	Type        HandlerType
-	RegistryURL string `yaml:"registryUrl"`
+	Plugins      pluginCfg `yaml:"plugins"`
+	Steps        []string
+	Type         HandlerType
+	RegistryURL  string `yaml:"registryUrl"`
+	Role         model.Role
+	SubscriberID string `yaml:"subscriberId"`
+	Trace        map[string]bool
 }
 
 // Step represents a named step
@@ -44,8 +48,8 @@ const (
 	StepFinalize   Step = "finalize"
 )
 
-// ValidSteps ensures only allowed values are accepted
-var ValidSteps = map[Step]bool{
+// validSteps ensures only allowed values are accepted
+var validSteps = map[Step]bool{
 	StepInitialize: true,
 	StepValidate:   true,
 	StepProcess:    true,
@@ -60,7 +64,7 @@ func (s *Step) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	step := Step(stepName)
-	if !ValidSteps[step] {
+	if !validSteps[step] {
 		return fmt.Errorf("invalid step: %s", stepName)
 	}
 	*s = step

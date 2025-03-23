@@ -21,7 +21,13 @@ modules:
     path: /bap/reciever/
     handler:
       type: std
-      registryUrl: https://onix-demo-adapter-593887498345.asia-south1.run.app/reg
+      role: bap
+      trace:
+        # validateSign: true
+        # addRoute: true
+        # validateSchema: true
+        # reqpreprocessor: true
+      registryUrl: http://localhost:8080/reg
       plugins:
         keyManager:
           id: secretskeymanager
@@ -31,8 +37,10 @@ modules:
           id: redis
           config:
             addr: 10.81.192.4:6379
-        schemaValidator:
-          id: nopschemavalidator
+        # schemaValidator:
+        #   id: schemavalidator
+        #   config:
+        #     schemaDir: /mnt/gcs/configs/schemas
         signValidator:
           id: signvalidator
         publisher:
@@ -52,12 +60,13 @@ modules:
       steps:
         - validateSign
         - addRoute
-        - validateSchema
+        # - validateSchema
   - name: bapTxnCaller
     path: /bap/caller/
     handler:
       type: std
-      registryUrl: https://onix-demo-adapter-593887498345.asia-south1.run.app/reg
+      registryUrl: http://localhost:8080/reg
+      role: bap
       plugins:
         keyManager:
           id: secretskeymanager
@@ -67,8 +76,10 @@ modules:
           id: redis
           config:
             addr: 10.81.192.4:6379
-        schemaValidator:
-          id: nopschemavalidator
+        # schemaValidator:
+        #   id: schemavalidator
+        #   config:
+        #     schemaDir: /mnt/gcs/configs/schemas
         signer:
           id: signer
         publisher:
@@ -86,14 +97,15 @@ modules:
               uuidKeys: transaction_id,message_id
               role: bap
       steps:
-        - validateSchema
+        # - validateSchema
         - addRoute
         - sign
   - name: bapSubscribeCaller
     path: /bap/subscribe
     handler:
       type: npSub
-      registryUrl: https://onix-demo-adapter-593887498345.asia-south1.run.app/reg
+      role: bap
+      registryUrl: http://localhost:8080/reg
       plugins:
         keyManager:
           id: secretskeymanager
@@ -107,7 +119,9 @@ modules:
     path: /bpp/reciever/
     handler:
       type: std
-      registryUrl: https://onix-demo-adapter-593887498345.asia-south1.run.app/reg
+      role: bpp
+      subscriberId: bpp1
+      registryUrl: http://localhost:8080/reg
       plugins:
         keyManager:
           id: secretskeymanager
@@ -117,8 +131,10 @@ modules:
           id: redis
           config:
             addr: 10.81.192.4:6379
-        schemaValidator:
-          id: nopschemavalidator
+        # schemaValidator:
+        #   id: schemavalidator
+        #   config:
+        #     schemaDir: /mnt/gcs/configs/schemas
         signValidator:
           id: signvalidator
         publisher:
@@ -138,12 +154,13 @@ modules:
       steps:
         - validateSign
         - addRoute
-        - validateSchema
+        # - validateSchema
   - name: bppTxnCaller
     path: /bpp/caller/
     handler:
       type: std
-      registryUrl: https://onix-demo-adapter-593887498345.asia-south1.run.app/reg
+      role: bpp
+      registryUrl: http://localhost:8080/reg
       plugins:
         keyManager:
           id: secretskeymanager
@@ -153,8 +170,10 @@ modules:
           id: redis
           config:
             addr: 10.81.192.4:6379
-        schemaValidator:
-          id: nopschemavalidator
+        # schemaValidator:
+        #   id: schemavalidator
+        #   config:
+        #     schemaDir: /mnt/gcs/configs/schemas
         signer:
           id: signer
         publisher:
@@ -172,14 +191,15 @@ modules:
               uuidKeys: transaction_id,message_id
               role: bpp
       steps:
-        - validateSchema
+        # - validateSchema
         - addRoute
         - sign
   - name: bppSubscribeCaller
     path: /bpp/subscribe
     handler:
       type: npSub
-      registryUrl: https://onix-demo-adapter-593887498345.asia-south1.run.app/reg
+      role: bpp
+      registryUrl: http://localhost:8080/reg
       plugins:
         keyManager:
           id: secretskeymanager
@@ -193,6 +213,7 @@ modules:
     path: /reg/subscribe
     handler:
       type: regSub
+      role: registery
       plugins:
         cache:
           id: redis
@@ -202,6 +223,7 @@ modules:
     path: /reg/lookUp
     handler:
       type: lookUp
+      role: registery
       plugins:
         cache:
           id: redis

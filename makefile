@@ -1,5 +1,5 @@
 # Define the list of plugins
-PLUGIN_NAMES = signer router secretskeymanager publisher redis reqpreprocessor nopschemavalidator signvalidator
+PLUGIN_NAMES = signer router secretskeymanager publisher redis reqpreprocessor schemavalidator signvalidator
 
 .PHONY: install-plugins
 install-plugins:

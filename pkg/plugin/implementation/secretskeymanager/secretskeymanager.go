@@ -14,8 +14,8 @@ import (
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
 
+	"github.com/ashishGuliya/onix/pkg/model"
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
-	"github.com/ashishGuliya/onix/pkg/protocol"
 	"github.com/google/uuid"
 	"github.com/googleapis/gax-go/v2"
 	"google.golang.org/grpc/codes"
@@ -296,8 +296,8 @@ func (km *keyMgr) getPublicKeys(ctx context.Context, subscriberID, uniqueKeyID s
 
 // lookupRegistry makes the lookup call to registry using registryLookup implementation.
 func (km *keyMgr) lookupRegistry(ctx context.Context, subscriberID, uniqueKeyID string) (*definition.Keyset, error) {
-	subscribers, err := km.registry.Lookup(ctx, &protocol.Subscription{
-		Subscriber: protocol.Subscriber{
+	subscribers, err := km.registry.Lookup(ctx, &model.Subscription{
+		Subscriber: model.Subscriber{
 			SubscriberID: subscriberID,
 		},
 		KeyID: uniqueKeyID,

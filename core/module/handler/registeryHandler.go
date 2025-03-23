@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/ashishGuliya/onix/pkg/log"
+	"github.com/ashishGuliya/onix/pkg/model"
 	"github.com/ashishGuliya/onix/pkg/plugin"
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
-	"github.com/ashishGuliya/onix/pkg/protocol"
 )
 
 // regSubscibeHandler encapsulates the subscription logic.
@@ -45,7 +45,7 @@ func (p *regSubscibeHandler) initPlugins(ctx context.Context, mgr *plugin.Manage
 func (s *regSubscibeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Debug(r.Context(), "Reg Subscribe handler called.")
 	// Parse request body
-	var req protocol.Subscription
+	var req model.Subscription
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Errorf(r.Context(), err, "Reg Subscribe handler: Bad Request")
 		http.Error(w, "invalid request body", http.StatusBadRequest)
@@ -71,7 +71,7 @@ func (s *regSubscibeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // validate checks if all required fields are present and valid.
-func validateSubscriptionReq(req *protocol.Subscription) error {
+func validateSubscriptionReq(req *model.Subscription) error {
 	if req == nil {
 		return errors.New("missing request")
 	}
@@ -88,8 +88,8 @@ func validateSubscriptionReq(req *protocol.Subscription) error {
 }
 
 // subscribe processes the subscription logic and stores it in the cache.
-func (s *regSubscibeHandler) subscribe(req *protocol.Subscription) error {
-	subscription := &protocol.Subscription{
+func (s *regSubscibeHandler) subscribe(req *model.Subscription) error {
+	subscription := &model.Subscription{
 		Subscriber:       req.Subscriber,
 		SigningPublicKey: req.SigningPublicKey,
 		EncrPublicKey:    req.EncrPublicKey,
@@ -143,7 +143,7 @@ func (h *lookUpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Debug(r.Context(), "Reg Lookup handler called.")
-	var req protocol.Subscription
+	var req model.Subscription
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -161,7 +161,7 @@ func (h *lookUpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var subData protocol.Subscription
+	var subData model.Subscription
 	err = json.Unmarshal([]byte(cachedValue), &subData)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -171,7 +171,7 @@ func (h *lookUpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Send the result as the response
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode([]protocol.Subscription{subData})
+	err = json.NewEncoder(w).Encode([]model.Subscription{subData})
 	if err != nil {
 		log.Errorf(r.Context(), err, "Error encoding JSON")
 	}

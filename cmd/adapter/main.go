@@ -15,6 +15,11 @@ import (
 	"github.com/ashishGuliya/onix/pkg/log"
 	"github.com/ashishGuliya/onix/pkg/plugin"
 
+	"github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"gopkg.in/yaml.v2"
 )
 
@@ -23,7 +28,7 @@ type config struct {
 	AppName       string                `yaml:"appName"`
 	Log           log.Config            `yaml:"log"`
 	PluginManager *plugin.ManagerConfig `yaml:"pluginManager"`
-	Modules        []module.Config       `yaml:"modules"`
+	Modules       []module.Config       `yaml:"modules"`
 	HTTP          httpConfig            `yaml:"http"` // Nest http config
 }
 
@@ -53,6 +58,34 @@ func main() {
 		log.Fatalf(context.Background(), err, "Application failed: %v", err)
 	}
 	log.Infof(context.Background(), "Application finished")
+}
+
+func initTracer(ctx context.Context, projectID string) (func(), error) {
+	var tpos []sdktrace.TracerProviderOption
+	// if our code is running on GCP (cloud run/functions/app engine/gke) then we will export directly to cloud tracing
+
+	exporter, err := trace.New(trace.WithProjectID(projectID))
+	if err != nil {
+		return nil, fmt.Errorf("trace.NewExporter(): %v", err)
+	}
+	tpos = append(tpos, sdktrace.WithBatcher(exporter))
+
+	tp := sdktrace.NewTracerProvider(tpos...)
+
+	otel.SetTracerProvider(tp)
+
+	propagator := propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	)
+	otel.SetTextMapPropagator(propagator)
+
+	return func() {
+		err := tp.ForceFlush(ctx)
+		if err != nil {
+			log.Errorf(context.Background(), err, "tracerProvider.ForceFlush(): %v", err)
+		}
+	}, nil
 }
 
 // initConfig loads and validates the configuration.
@@ -117,17 +150,25 @@ func run(ctx context.Context, configPath string) error {
 		return fmt.Errorf("failed to create plugin manager: %w", err)
 	}
 	closers = append(closers, closer)
-	log.Debugf(ctx, "Got manage: %#v", mgr)
+	log.Debug(ctx, "Plugin manager loaded.")
+
+	close, err := initTracer(ctx, "trusty-relic-370809")
+	if err != nil {
+		return fmt.Errorf("initTracer(): %v", err)
+	}
+	closers = append(closers, close)
+
 	// Initialize HTTP server.
 	log.Infof(ctx, "Initializing HTTP server")
 	srv, err := newServer(ctx, mgr, cfg)
 	if err != nil {
 		return fmt.Errorf("failed to initialize server: %w", err)
 	}
+	otelWrapper := otelhttp.NewHandler(srv, "requesthandler")
 	// Configure HTTP server.
 	httpServer := &http.Server{
 		Addr:         net.JoinHostPort("", cfg.HTTP.Port),
-		Handler:      srv,
+		Handler:      otelWrapper,
 		ReadTimeout:  cfg.HTTP.Timeout.Read * time.Second, // Use timeouts from config
 		WriteTimeout: cfg.HTTP.Timeout.Write * time.Second,
 		IdleTimeout:  cfg.HTTP.Timeout.Idle * time.Second,

@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
-	"github.com/ashishGuliya/onix/plugin/secretskeymanager"
+	"github.com/ashishGuliya/onix/pkg/plugin/implementation/secretskeymanager"
 )
 
 // keyMgrProvider implements the KeyManagerProvider interface.

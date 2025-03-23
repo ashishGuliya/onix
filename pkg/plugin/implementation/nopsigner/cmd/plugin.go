@@ -16,7 +16,7 @@ func (vp provider) New(ctx context.Context, config map[string]string) (definitio
 type signer struct {
 }
 
-func (v *signer) Sign(ctx context.Context, body []byte, privateKeyBase64 string) (string, error) {
+func (v *signer) Sign(ctx context.Context, _ []byte, _ string, _ int64, _ int64) (string, error) {
 	log.Debugf(ctx, "NOP Signer called, Returing nop sign.")
 	return "NOP Sign", nil
 }

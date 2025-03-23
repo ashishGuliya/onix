@@ -2,18 +2,12 @@ package definition
 
 import (
 	"context"
-	"net/http"
+
+	"github.com/ashishGuliya/onix/pkg/model"
 )
 
-type StepContext struct {
-	context.Context
-	Request *http.Request
-	Body    []byte
-	Route   *Route
-}
-
 type Step interface {
-	Run(ctx *StepContext) error
+	Run(ctx *model.StepContext) error
 }
 
 type StepProvider interface {

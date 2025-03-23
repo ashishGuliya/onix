@@ -1,4 +1,4 @@
 routes:
   - action: search
     type: url
-    target: https://onix-demo-adapter-593887498345.asia-south1.run.app/bpp/reciever/search
+    target: http://localhost:8080/bpp/reciever/search

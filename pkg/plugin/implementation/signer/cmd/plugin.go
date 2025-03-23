@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
-	"github.com/ashishGuliya/onix/plugin/signer"
+	"github.com/ashishGuliya/onix/pkg/plugin/implementation/signer"
 )
 
 // provider implements the definition.provider interface.

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
-	"github.com/ashishGuliya/onix/plugin/redis"
+	"github.com/ashishGuliya/onix/pkg/plugin/implementation/redis"
 	"github.com/go-redis/redismock/v9"
 )
 

@@ -11,8 +11,10 @@ import (
 
 	"github.com/ashishGuliya/onix/core/module/client"
 	"github.com/ashishGuliya/onix/pkg/log"
+	"github.com/ashishGuliya/onix/pkg/model"
 	"github.com/ashishGuliya/onix/pkg/plugin"
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
+	"github.com/ashishGuliya/onix/pkg/response"
 )
 
 // stdHandler orchestrates the execution of defined processing steps.
@@ -25,62 +27,91 @@ type stdHandler struct {
 	schemaValidator definition.SchemaValidator
 	router          definition.Router
 	publisher       definition.Publisher
+	SubscriberID    string
+	role            model.Role
 }
 
 // NewStdHandler initializes a new processor with plugins and steps.
 func NewStdHandler(ctx context.Context, mgr *plugin.Manager, cfg *Config) (http.Handler, error) {
-	p := &stdHandler{
-		steps: []definition.Step{},
+	h := &stdHandler{
+		steps:        []definition.Step{},
+		SubscriberID: cfg.SubscriberID,
+		role:         cfg.Role,
 	}
 	// Initialize plugins
-	if err := p.initPlugins(ctx, mgr, &cfg.Plugins, cfg.RegistryURL); err != nil {
+	if err := h.initPlugins(ctx, mgr, &cfg.Plugins, cfg.RegistryURL); err != nil {
 		return nil, fmt.Errorf("failed to initialize plugins: %w", err)
 	}
 	// Initialize steps
-	if err := p.initSteps(ctx, mgr, cfg); err != nil {
+	if err := h.initSteps(ctx, mgr, cfg); err != nil {
 		return nil, fmt.Errorf("failed to initialize steps: %w", err)
 	}
-	return p, nil
+	return h, nil
 }
 
+//	func(h *stdHandler)InitTracing(ctx context.Context, trace map[string]bool){
+//		for id,s:= range h.steps{
+//			if trace[id]
+//		}
+//	}
+//
 // Process executes defined processing steps on an incoming request.
-func (p *stdHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// Efficiently read the request body into a buffer
-	var bodyBuffer bytes.Buffer
-	if _, err := io.Copy(&bodyBuffer, r.Body); err != nil {
-		log.Errorf(r.Context(), err, "Failed to read request body")
-		http.Error(w, "Failed to read request body", http.StatusBadRequest)
+func (h *stdHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ctx, err := h.stepCtx(r, w.Header())
+	if err != nil {
+		log.Errorf(r.Context(), err, "stepCtx(r):%v", err)
+		response.SendNack(r.Context(), w, err)
 		return
-	}
-	r.Body.Close()
-	ctx := &definition.StepContext{
-		Context: r.Context(),
-		Request: r,
-		Body:    bodyBuffer.Bytes(),
 	}
 	log.Request(r.Context(), r, ctx.Body)
 
 	// Execute processing steps
-	for _, step := range p.steps {
+	for _, step := range h.steps {
 		if err := step.Run(ctx); err != nil {
-			log.Errorf(r.Context(), err, "Step execution failed: %T", step)
-			http.Error(w, "Internal error during processing", http.StatusInternalServerError)
+			log.Errorf(ctx, err, "%T.run(%v):%v", step, ctx, err)
+			response.SendNack(ctx, w, err)
 			return
 		}
 	}
-
 	// Restore request body before forwarding or publishing
 	r.Body = io.NopCloser(bytes.NewReader(ctx.Body))
-
 	if ctx.Route == nil {
+		response.SendAck(w)
 		return
 	}
 
 	// Handle routing based on the defined route type
-	route(ctx, r, w, p.publisher)
+	route(ctx, r, w, h.publisher)
 }
 
-func route(ctx *definition.StepContext, r *http.Request, w http.ResponseWriter, pb definition.Publisher) {
+func (h *stdHandler) stepCtx(r *http.Request, rh http.Header) (*model.StepContext, error) {
+	var bodyBuffer bytes.Buffer
+	if _, err := io.Copy(&bodyBuffer, r.Body); err != nil {
+		return nil, model.NewBadReqErr(err)
+	}
+	r.Body.Close()
+	subID := h.subID(r.Context())
+	if len(subID) == 0 {
+		return nil, model.NewBadReqErr(fmt.Errorf("subscriberID not set"))
+	}
+	return &model.StepContext{
+		Context:    r.Context(),
+		Request:    r,
+		Body:       bodyBuffer.Bytes(),
+		Role:       h.role,
+		SubID:      subID,
+		RespHeader: rh,
+	}, nil
+}
+func (h *stdHandler) subID(ctx context.Context) string {
+	rSubID, ok := ctx.Value("subscriber_id").(string)
+	if ok {
+		return rSubID
+	}
+	return h.SubscriberID
+}
+
+func route(ctx *model.StepContext, r *http.Request, w http.ResponseWriter, pb definition.Publisher) {
 	log.Debugf(ctx, "Routing to ctx.Route to %#v", ctx.Route)
 	switch ctx.Route.Type {
 	case "url":
@@ -90,21 +121,24 @@ func route(ctx *definition.StepContext, r *http.Request, w http.ResponseWriter, 
 	case "publisher":
 		if pb == nil {
 			err := fmt.Errorf("publisher plugin not configured")
-			log.Errorf(ctx.Context, err, "Invalid configuration")
-			http.Error(w, "Invalid configuration: Publisher plugin not configured", http.StatusInternalServerError)
+			log.Errorf(ctx.Context, err, "Invalid configuration:%w", err)
+			response.SendNack(ctx, w, err)
 			return
 		}
 		log.Infof(ctx.Context, "Publishing message to: %s", ctx.Route.Publisher)
 		if err := pb.Publish(ctx, ctx.Route.Publisher, ctx.Body); err != nil {
 			log.Errorf(ctx.Context, err, "Failed to publish message")
 			http.Error(w, "Error publishing message", http.StatusInternalServerError)
+			response.SendNack(ctx, w, err)
 			return
 		}
 	default:
-		log.Errorf(ctx.Context, fmt.Errorf("Failed to publish message"), "")
-		http.Error(w, "Error publishing message", http.StatusInternalServerError)
+		err := fmt.Errorf("unknown route type: %s", ctx.Route.Type)
+		log.Errorf(ctx.Context, err, "Invalid configuration:%w", err)
+		response.SendNack(ctx, w, err)
 		return
 	}
+	response.SendAck(w)
 }
 
 // proxy forwards the request to a target URL using a reverse proxy.
@@ -224,10 +258,11 @@ func (p *stdHandler) initSteps(ctx context.Context, mgr *plugin.Manager, cfg *Co
 		if err != nil {
 			return err
 		}
-
+		if cfg.Trace[step] {
+			s = traceWrapper(step, s)
+		}
 		p.steps = append(p.steps, s)
 	}
-
 	log.Infof(ctx, "Processor steps initialized: %v", cfg.Steps)
 	return nil
 }

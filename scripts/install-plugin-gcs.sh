@@ -27,7 +27,7 @@ mkdir -p "$PLUGIN_OUTPUT_DIR"
 # Build command for all plugins
 BUILD_CMDS=""
 for PLUGIN_NAME in "${PLUGIN_NAMES[@]}"; do
-  BUILD_CMDS+="go build -buildmode=plugin -buildvcs=false -o ${PLUGIN_OUTPUT_DIR}/${PLUGIN_NAME}.so ./plugin/${PLUGIN_NAME}/cmd && "
+  BUILD_CMDS+="go build -buildmode=plugin -buildvcs=false -o ${PLUGIN_OUTPUT_DIR}/${PLUGIN_NAME}.so ./pkg/plugin/implementation/${PLUGIN_NAME}/cmd && "
 done
 BUILD_CMDS=${BUILD_CMDS%" && "}  # Remove trailing '&&'
 

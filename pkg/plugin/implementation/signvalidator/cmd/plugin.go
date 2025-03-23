@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
-	"github.com/ashishGuliya/onix/plugin/signvalidator"
+	"github.com/ashishGuliya/onix/pkg/plugin/implementation/signvalidator"
 )
 
 // validatorProvider provides instances of Verifier.

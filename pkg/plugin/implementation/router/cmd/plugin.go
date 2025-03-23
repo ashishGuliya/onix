@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ashishGuliya/onix/plugin/router"
-
 	"github.com/ashishGuliya/onix/pkg/log"
 	"github.com/ashishGuliya/onix/pkg/plugin/definition"
+	"github.com/ashishGuliya/onix/pkg/plugin/implementation/router"
 	"gopkg.in/yaml.v2"
 )
 

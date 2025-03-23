@@ -16,9 +16,9 @@ func (vp provider) New(ctx context.Context, config map[string]string) (definitio
 type defaultValidator struct {
 }
 
-func (v *defaultValidator) Verify(ctx context.Context, body []byte, header string, publicKeyBase64 string) (bool, error) {
+func (v *defaultValidator) Validate(ctx context.Context, _ []byte, _ string, _ string) error {
 	log.Debugf(ctx, "NOP Sign Validator called, Skipping sign validation.")
-	return true, nil
+	return nil
 }
 
 var Provider = provider{}

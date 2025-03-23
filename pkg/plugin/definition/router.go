@@ -3,18 +3,14 @@ package definition
 import (
 	"context"
 	"net/url"
+
+	"github.com/ashishGuliya/onix/pkg/model"
 )
 
 type Router interface {
-	Route(ctx context.Context, url *url.URL, body []byte) (*Route, error)
+	Route(ctx context.Context, url *url.URL, body []byte) (*model.Route, error)
 }
 
 type RouterProvider interface {
 	New(ctx context.Context, cfg map[string]string) (Router, error)
-}
-
-type Route struct {
-	Type      string
-	URL       *url.URL
-	Publisher string
 }
