@@ -76,10 +76,10 @@ modules:
           id: redis
           config:
             addr: 10.81.192.4:6379
-        # schemaValidator:
-        #   id: schemavalidator
-        #   config:
-        #     schemaDir: /mnt/gcs/configs/schemas
+        schemaValidator:
+          id: schemavalidator
+          config:
+            schemaDir: /mnt/gcs/configs/schemas
         signer:
           id: signer
         publisher:

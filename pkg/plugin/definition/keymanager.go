@@ -2,8 +2,6 @@ package definition
 
 import (
 	"context"
-
-	"github.com/ashishGuliya/onix/pkg/model"
 )
 
 type Keyset struct {
@@ -28,8 +26,4 @@ type KeyManager interface {
 // KeyManagerProvider initializes a new signer instance.
 type KeyManagerProvider interface {
 	New(context.Context, Cache, RegistryLookup, map[string]string) (KeyManager, func() error, error)
-}
-
-type RegistryLookup interface {
-	Lookup(ctx context.Context, req *model.Subscription) ([]model.Subscription, error)
 }
