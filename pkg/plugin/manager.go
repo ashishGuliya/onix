@@ -17,7 +17,7 @@ import (
 	"github.com/beckn/beckn-onix/pkg/plugin/definition"
 )
 
-type Manager struct {
+type manager struct {
 	plugins map[string]*plugin.Plugin
 	closers []func()
 }
@@ -26,7 +26,7 @@ func validateMgrCfg(cfg *ManagerConfig) error {
 	return nil
 }
 
-func NewManager(ctx context.Context, cfg *ManagerConfig) (*Manager, func(), error) {
+func NewManager(ctx context.Context, cfg *ManagerConfig) (*manager, func(), error) {
 	if err := validateMgrCfg(cfg); err != nil {
 		return nil, nil, fmt.Errorf("Invalid config: %w", err)
 	}
@@ -43,7 +43,7 @@ func NewManager(ctx context.Context, cfg *ManagerConfig) (*Manager, func(), erro
 	}
 
 	closers := []func(){}
-	return &Manager{plugins: plugins, closers: closers}, func() {
+	return &manager{plugins: plugins, closers: closers}, func() {
 		for _, closer := range closers {
 			closer()
 		}
@@ -107,25 +107,26 @@ func provider[T any](plugins map[string]*plugin.Plugin, id string) (T, error) {
 
 // GetPublisher returns a Publisher instance based on the provided configuration.
 // It reuses the loaded provider.
-func (m *Manager) Publisher(ctx context.Context, cfg *Config) (definition.Publisher, error) {
+func (m *manager) Publisher(ctx context.Context, cfg *Config) (definition.Publisher, error) {
 	pp, err := provider[definition.PublisherProvider](m.plugins, cfg.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
 	}
-	p, err := pp.New(ctx, cfg.Config)
+	p, closer, err := pp.New(ctx, cfg.Config)
 	if err != nil {
 		return nil, err
 	}
+	m.addCloser(closer)
 	return p, nil
 }
 
-func (m *Manager) addCloser(closer func()) {
+func (m *manager) addCloser(closer func()) {
 	if closer != nil {
 		m.closers = append(m.closers, closer)
 	}
 }
 
-func (m *Manager) SchemaValidator(ctx context.Context, cfg *Config) (definition.SchemaValidator, error) {
+func (m *manager) SchemaValidator(ctx context.Context, cfg *Config) (definition.SchemaValidator, error) {
 	vp, err := provider[definition.SchemaValidatorProvider](m.plugins, cfg.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
@@ -144,7 +145,7 @@ func (m *Manager) SchemaValidator(ctx context.Context, cfg *Config) (definition.
 	return v, nil
 }
 
-func (m *Manager) Router(ctx context.Context, cfg *Config) (definition.Router, error) {
+func (m *manager) Router(ctx context.Context, cfg *Config) (definition.Router, error) {
 	rp, err := provider[definition.RouterProvider](m.plugins, cfg.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
@@ -160,7 +161,7 @@ func (m *Manager) Router(ctx context.Context, cfg *Config) (definition.Router, e
 	return router, nil
 }
 
-func (m *Manager) Middleware(ctx context.Context, cfg *Config) (func(http.Handler) http.Handler, error) {
+func (m *manager) Middleware(ctx context.Context, cfg *Config) (func(http.Handler) http.Handler, error) {
 	mwp, err := provider[definition.MiddlewareProvider](m.plugins, cfg.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
@@ -168,7 +169,7 @@ func (m *Manager) Middleware(ctx context.Context, cfg *Config) (func(http.Handle
 	return mwp.New(ctx, cfg.Config)
 }
 
-func (m *Manager) Step(ctx context.Context, cfg *Config) (definition.Step, error) {
+func (m *manager) Step(ctx context.Context, cfg *Config) (definition.Step, error) {
 	sp, err := provider[definition.StepProvider](m.plugins, cfg.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
@@ -180,7 +181,7 @@ func (m *Manager) Step(ctx context.Context, cfg *Config) (definition.Step, error
 	return step, error
 }
 
-func (m *Manager) Cache(ctx context.Context, cfg *Config) (definition.Cache, error) {
+func (m *manager) Cache(ctx context.Context, cfg *Config) (definition.Cache, error) {
 	cp, err := provider[definition.CacheProvider](m.plugins, cfg.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
@@ -197,7 +198,7 @@ func (m *Manager) Cache(ctx context.Context, cfg *Config) (definition.Cache, err
 	return c, nil
 }
 
-func (m *Manager) Signer(ctx context.Context, cfg *Config) (definition.Signer, error) {
+func (m *manager) Signer(ctx context.Context, cfg *Config) (definition.Signer, error) {
 	sp, err := provider[definition.SignerProvider](m.plugins, cfg.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
@@ -215,7 +216,7 @@ func (m *Manager) Signer(ctx context.Context, cfg *Config) (definition.Signer, e
 	}
 	return s, nil
 }
-func (m *Manager) Encryptor(ctx context.Context, cfg *Config) (definition.Encrypter, error) {
+func (m *manager) Encryptor(ctx context.Context, cfg *Config) (definition.Encrypter, error) {
 	ep, err := provider[definition.EncrypterProvider](m.plugins, cfg.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
@@ -234,7 +235,7 @@ func (m *Manager) Encryptor(ctx context.Context, cfg *Config) (definition.Encryp
 	return encrypter, nil
 }
 
-func (m *Manager) Decryptor(ctx context.Context, cfg *Config) (definition.Decrypter, error) {
+func (m *manager) Decryptor(ctx context.Context, cfg *Config) (definition.Decrypter, error) {
 	dp, err := provider[definition.DecrypterProvider](m.plugins, cfg.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
@@ -256,8 +257,8 @@ func (m *Manager) Decryptor(ctx context.Context, cfg *Config) (definition.Decryp
 	return decrypter, nil
 }
 
-func (m *Manager) SignValidator(ctx context.Context, cfg *Config) (definition.Verifier, error) {
-	svp, err := provider[definition.VerifierProvider](m.plugins, cfg.ID)
+func (m *manager) SignValidator(ctx context.Context, cfg *Config) (definition.SignValidator, error) {
+	svp, err := provider[definition.SignValidatorProvider](m.plugins, cfg.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load provider for %s: %w", cfg.ID, err)
 	}
@@ -277,7 +278,7 @@ func (m *Manager) SignValidator(ctx context.Context, cfg *Config) (definition.Ve
 
 // KeyManager returns a KeyManager instance based on the provided configuration.
 // It reuses the loaded provider.
-func (m *Manager) KeyManager(ctx context.Context, cache definition.Cache, rClient definition.RegistryLookup, cfg *Config) (definition.KeyManager, error) {
+func (m *manager) KeyManager(ctx context.Context, cache definition.Cache, rClient definition.RegistryLookup, cfg *Config) (definition.KeyManager, error) {
 
 	kmp, err := provider[definition.KeyManagerProvider](m.plugins, cfg.ID)
 	if err != nil {
@@ -296,7 +297,7 @@ func (m *Manager) KeyManager(ctx context.Context, cache definition.Cache, rClien
 }
 
 // Validator implements handler.PluginManager.
-func (m *Manager) Validator(ctx context.Context, cfg *Config) (definition.SchemaValidator, error) {
+func (m *manager) Validator(ctx context.Context, cfg *Config) (definition.SchemaValidator, error) {
 	panic("unimplemented")
 }
 

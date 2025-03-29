@@ -21,7 +21,7 @@ import (
 type stdHandler struct {
 	signer          definition.Signer
 	steps           []definition.Step
-	signValidator   definition.Verifier
+	signValidator   definition.SignValidator
 	cache           definition.Cache
 	km              definition.KeyManager
 	schemaValidator definition.SchemaValidator
@@ -51,6 +51,7 @@ func NewStdHandler(ctx context.Context, mgr PluginManager, cfg *Config) (http.Ha
 
 // ServeHTTP processes an incoming HTTP request and executes defined processing steps.
 func (h *stdHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
 	ctx, err := h.stepCtx(r, w.Header())
 	if err != nil {
 		log.Errorf(r.Context(), err, "stepCtx(r):%v", err)
@@ -103,15 +104,17 @@ func (h *stdHandler) stepCtx(r *http.Request, rh http.Header) (*model.StepContex
 func (h *stdHandler) subID(ctx context.Context) string {
 	rSubID, ok := ctx.Value("subscriber_id").(string)
 	if ok {
+		log.Debugf(ctx, "Got subscriberId from request: %s", rSubID)
 		return rSubID
 	}
+	log.Debugf(ctx, "Using configured subscriberID: %s", h.SubscriberID)
 	return h.SubscriberID
 }
 
 // route handles request forwarding or message publishing based on the routing type.
 func route(ctx *model.StepContext, r *http.Request, w http.ResponseWriter, pb definition.Publisher) {
 	log.Debugf(ctx, "Routing to ctx.Route to %#v", ctx.Route)
-	switch ctx.Route.Type {
+	switch ctx.Route.TargetType {
 	case "url":
 		log.Infof(ctx.Context, "Forwarding request to URL: %s", ctx.Route.URL)
 		proxy(r, w, ctx.Route.URL)
@@ -123,15 +126,15 @@ func route(ctx *model.StepContext, r *http.Request, w http.ResponseWriter, pb de
 			response.SendNack(ctx, w, err)
 			return
 		}
-		log.Infof(ctx.Context, "Publishing message to: %s", ctx.Route.Publisher)
-		if err := pb.Publish(ctx, ctx.Body); err != nil {
+		log.Infof(ctx.Context, "Publishing message to: %s", ctx.Route.PublisherID)
+		if err := pb.Publish(ctx, ctx.Route.PublisherID, ctx.Body); err != nil {
 			log.Errorf(ctx.Context, err, "Failed to publish message")
 			http.Error(w, "Error publishing message", http.StatusInternalServerError)
 			response.SendNack(ctx, w, err)
 			return
 		}
 	default:
-		err := fmt.Errorf("unknown route type: %s", ctx.Route.Type)
+		err := fmt.Errorf("unknown route type: %s", ctx.Route.TargetType)
 		log.Errorf(ctx.Context, err, "Invalid configuration:%v", err)
 		response.SendNack(ctx, w, err)
 		return
@@ -164,7 +167,6 @@ func loadPlugin[T any](ctx context.Context, name string, cfg *plugin.Config, mgr
 	if err != nil {
 		return zero, fmt.Errorf("failed to load %s plugin (%s): %w", name, cfg.ID, err)
 	}
-
 	log.Debugf(ctx, "Loaded %s plugin: %s", name, cfg.ID)
 	return plugin, nil
 }
@@ -181,7 +183,7 @@ func loadKeyManager(ctx context.Context, mgr PluginManager, cache definition.Cac
 	rClient := client.NewRegisteryClient(&client.Config{RegisteryURL: regURL})
 	km, err := mgr.KeyManager(ctx, cache, rClient, cfg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load cache plugin (%s): %w", cfg.ID, err)
+		return nil, fmt.Errorf("failed to load KeyManager plugin (%s): %w", cfg.ID, err)
 	}
 
 	log.Debugf(ctx, "Loaded Keymanager plugin: %s", cfg.ID)
@@ -230,6 +232,33 @@ func (h *stdHandler) initSteps(ctx context.Context, mgr PluginManager, cfg *Conf
 		steps[c.ID] = step
 	}
 
-	log.Infof(ctx, "Processor steps initialized: %v", cfg.Steps)
+	// Register processing steps
+	for _, step := range cfg.Steps {
+		var s definition.Step
+		var err error
+
+		switch step {
+		case "sign":
+			s, err = newSignStep(h.signer, h.km)
+		case "validateSign":
+			s, err = newValidateSignStep(h.signValidator, h.km)
+		case "validateSchema":
+			s, err = newValidateSchemaStep(h.schemaValidator)
+		case "addRoute":
+			s, err = newRouteStep(h.router)
+		default:
+			if customStep, exists := steps[step]; exists {
+				s = customStep
+
+			} else {
+				return fmt.Errorf("unrecognized step: %s", step)
+			}
+		}
+		if err != nil {
+			return err
+		}
+		h.steps = append(h.steps, s)
+	}
+	log.Infof(ctx, "Handler steps initialized: %v", cfg.Steps)
 	return nil
 }

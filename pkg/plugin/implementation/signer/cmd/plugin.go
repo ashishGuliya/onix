@@ -16,9 +16,8 @@ func (p SignerProvider) New(ctx context.Context, config map[string]string) (defi
 	if ctx == nil {
 		return nil, nil, errors.New("context cannot be nil")
 	}
-
 	return signer.New(ctx, &signer.Config{})
 }
 
 // Provider is the exported symbol that the plugin manager will look for.
-var Provider definition.SignerProvider = SignerProvider{}
+var Provider = SignerProvider{}

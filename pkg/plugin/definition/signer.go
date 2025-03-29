@@ -8,7 +8,6 @@ type Signer interface {
 	// The signature is created with the given timestamps: createdAt (signature creation time)
 	// and expiresAt (signature expiration time).
 	Sign(ctx context.Context, body []byte, privateKeyBase64 string, createdAt, expiresAt int64) (string, error)
-	Close() error // Close for releasing resources
 }
 
 // SignerProvider initializes a new signer instance with the given config.

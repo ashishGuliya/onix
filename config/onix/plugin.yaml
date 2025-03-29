@@ -1,0 +1,5 @@
+plugins:
+  signer: # Plugin ID
+    src: github.com/beckn/beckn-onix # Github repo url
+    version: v0.0.1 # Managed via git tags.
+    path: pkg/plugin/implementation/signer/cmd # Path to the main file.

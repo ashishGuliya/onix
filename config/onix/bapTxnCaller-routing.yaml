@@ -1,0 +1,12 @@
+routingRules:
+  - domain: ONDC:TRV10
+    version: 2.0.0
+    targetType: bpp
+    endpoints:
+      - search
+      - select
+      - init
+      - confirm
+      - status
+      - update
+      - cancel

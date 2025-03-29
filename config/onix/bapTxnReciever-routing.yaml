@@ -1,0 +1,14 @@
+routingRules:
+  - domain: ONDC:TRV10
+    version: 2.0.0
+    targetType: publisher
+    target:
+      publisherId: bapNetworkReciever
+    endpoints:
+      - on_search
+      - on_select
+      - on_init
+      - on_confirm
+      - on_status
+      - on_update
+      - on_cancel

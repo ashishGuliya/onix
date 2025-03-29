@@ -12,7 +12,7 @@ import (
 // PluginManager defines an interface for managing plugins dynamically.
 type PluginManager interface {
 	Middleware(ctx context.Context, cfg *plugin.Config) (func(http.Handler) http.Handler, error)
-	SignValidator(ctx context.Context, cfg *plugin.Config) (definition.Verifier, error)
+	SignValidator(ctx context.Context, cfg *plugin.Config) (definition.SignValidator, error)
 	Validator(ctx context.Context, cfg *plugin.Config) (definition.SchemaValidator, error)
 	Router(ctx context.Context, cfg *plugin.Config) (definition.Router, error)
 	Publisher(ctx context.Context, cfg *plugin.Config) (definition.Publisher, error)
@@ -28,7 +28,10 @@ type Type string
 
 const (
 	// HandlerTypeStd represents the standard handler type used for general request processing.
-	HandlerTypeStd Type = "std"
+	HandlerTypeStd    Type = "std"
+	HandlerTypeRegSub Type = "regSub"
+	HandlerTypeNPSub  Type = "npSub"
+	HandlerTypeLookup Type = "lookUp"
 )
 
 // PluginCfg holds the configuration for various plugins.

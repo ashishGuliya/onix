@@ -51,12 +51,12 @@ func (s *signStep) Run(ctx *model.StepContext) error {
 
 // validateSignStep represents the signature validation step.
 type validateSignStep struct {
-	validator definition.Verifier
+	validator definition.SignValidator
 	km        definition.KeyManager
 }
 
 // newValidateSignStep initializes and returns a new validate sign step.
-func newValidateSignStep(signValidator definition.Verifier, km definition.KeyManager) (definition.Step, error) {
+func newValidateSignStep(signValidator definition.SignValidator, km definition.KeyManager) (definition.Step, error) {
 	if signValidator == nil {
 		return nil, fmt.Errorf("invalid config: SignValidator plugin not configured")
 	}
@@ -101,7 +101,7 @@ func (s *validateSignStep) validate(ctx *model.StepContext, value string) error 
 	if err != nil {
 		return fmt.Errorf("failed to get validation key: %w", err)
 	}
-	if _, err := s.validator.Verify(ctx, ctx.Body, []byte(value), key); err != nil {
+	if err := s.validator.Validate(ctx, ctx.Body, value, key); err != nil {
 		return fmt.Errorf("sign validation failed: %w", err)
 	}
 	return nil
@@ -110,6 +110,14 @@ func (s *validateSignStep) validate(ctx *model.StepContext, value string) error 
 // validateSchemaStep represents the schema validation step.
 type validateSchemaStep struct {
 	validator definition.SchemaValidator
+}
+
+// newValidateSchemaStep creates and returns the validateSchema step after validation
+func newValidateSchemaStep(schemaValidator definition.SchemaValidator) (definition.Step, error) {
+	if schemaValidator == nil {
+		return nil, fmt.Errorf("invalid config: SchemaValidator plugin not configured")
+	}
+	return &validateSchemaStep{validator: schemaValidator}, nil
 }
 
 // Run executes the schema validation step.
@@ -125,8 +133,21 @@ type addRouteStep struct {
 	router definition.Router
 }
 
+// newRouteStep creates and returns the addRoute step after validation
+func newRouteStep(router definition.Router) (definition.Step, error) {
+	if router == nil {
+		return nil, fmt.Errorf("invalid config: Router plugin not configured")
+	}
+	return &addRouteStep{router: router}, nil
+}
+
 // Run executes the routing step.
 func (s *addRouteStep) Run(ctx *model.StepContext) error {
+	if s.router == nil {
+		return fmt.Errorf("invalid config: Router nil")
+	}
+
+	log.Debugf(ctx, "Routing request with url %v, with router: %#v", ctx.Request.URL, s.router)
 	route, err := s.router.Route(ctx, ctx.Request.URL, ctx.Body)
 	if err != nil {
 		return fmt.Errorf("failed to determine route: %w", err)
